@@ -157,20 +157,19 @@
             </tr>
             @php
                 $mods = unserialize($mods);
-                
             @endphp
 
             @foreach($mods as $mod)
-                @if(!isset($modules[$mod->n]))
+                @if(!isset($modules[$mod['n']]))
                     <tr>
                         <td><i class="fas fa-hand-point-right fa-2x"></i></td>
                         <td>
-                            <strong>{{$mod->dn}}</strong> <br/>
-                            <button onclick="window.open('{{$mod->u}}', '_blank')" 
+                            <strong>{{$mod['dn']}}</strong> <br/>
+                            <button onclick="window.open('{{$mod['u']}}', '_blank')" 
                             class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-accent"><i class="fas fa-money-bill"></i> Buy</button>
                         </td>
                         <td>
-                            {{$mod->d}}
+                            {{$mod['d']}}
                         </td>
                     </tr>
                 @endif

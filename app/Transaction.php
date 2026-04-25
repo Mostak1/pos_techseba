@@ -287,8 +287,6 @@ class Transaction extends Model
             'opening_balance' => __('lang_v1.opening_balance'),
             'payment' => __('lang_v1.payment'),
             'ledger_discount' => __('lang_v1.ledger_discount'),
-            'hms_booking' => __('lang_v1.hms_booking'),
-            'gym_subscription' => __('lang_v1.gym_subscription'),
         ];
     }
 

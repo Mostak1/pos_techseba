@@ -31,8 +31,6 @@ class Kernel extends ConsoleKernel
 
             $schedule->command('pos:autoSendPaymentReminder')->dailyAt('8:00');
 
-            $schedule->command('pos:generateRecurringExpense')->dailyAt('02:00');
-
         }
 
         if ($env === 'demo') {

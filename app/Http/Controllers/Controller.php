@@ -91,11 +91,8 @@ class Controller extends BaseController
 
     /**
      * Returns new mpdf instance
-     * 
-     * @param string $orientation 'P' for portrait (default), 'L' for landscape
-     * @return \Mpdf\Mpdf
      */
-    public function getMpdf($orientation = 'P')
+    public function getMpdf()
     {
         $mpdf = new \Mpdf\Mpdf(['tempDir' => public_path('uploads/temp'),
             'mode' => 'utf-8',
@@ -104,7 +101,6 @@ class Controller extends BaseController
             'autoVietnamese' => true,
             'autoArabic' => true,
             'useSubstitutions' => true,
-            'orientation' => $orientation,
         ]);
 
         if (auth()->check() && in_array(auth()->user()->language, config('constants.langs_rtl'))) {

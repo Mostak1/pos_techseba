@@ -105,6 +105,5 @@ return [
     'tax_number1' => 'Vergi numarası 1',
     'tax_number2' => 'Vergi numarası 2',
     'is_active' => 'Aktif',
-     'created_by' => 'Tarafından yaratıldı',
-     'additional_number_secondary' => 'Ek numara/İkincil numara',
- ];
+    'created_by' => 'Tarafından yaratıldı',
+];

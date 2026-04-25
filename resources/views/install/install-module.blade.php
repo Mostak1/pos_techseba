@@ -32,7 +32,7 @@
                       action="{{$action_url}}">
                     {{ csrf_field() }}
 
-                    <h2> License Details - <code>{{$module_display_name}} Module</code><br/><small class="text-danger"> Make sure to provide correct licensing information</small></h2>
+                    <h2> License Details - <code>{{$module_display_name ?? ''}} Module</code><br/><small class="text-danger"> Make sure to provide correct licensing information</small></h2>
                     <hr/>
 
                     <div class="col-md-4">

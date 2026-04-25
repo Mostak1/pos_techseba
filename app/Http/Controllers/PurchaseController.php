@@ -170,7 +170,7 @@ class PurchaseController extends Controller
                 })
                 ->removeColumn('id')
                 ->editColumn('ref_no', function ($row) {
-                    return ! empty($row->return_exists) ? e($row->ref_no).' <small class="label bg-red label-round no-print" title="'.__('lang_v1.some_qty_returned').'"><i class="fas fa-undo"></i></small>' : e($row->ref_no);
+                    return ! empty($row->return_exists) ? $row->ref_no.' <small class="label bg-red label-round no-print" title="'.__('lang_v1.some_qty_returned').'"><i class="fas fa-undo"></i></small>' : $row->ref_no;
                 })
                 ->editColumn(
                     'final_total',
@@ -405,9 +405,7 @@ class PurchaseController extends Controller
             $this->transactionUtil->createOrUpdatePaymentLines($transaction, $request->input('payment'));
 
             //update payment status
-            $payment_status = $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
-
-            $transaction->payment_status = $payment_status;
+            $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
 
             if (! empty($transaction->purchase_order_ids)) {
                 $this->transactionUtil->updatePurchaseOrderStatus($transaction->purchase_order_ids);

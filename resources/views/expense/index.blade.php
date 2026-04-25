@@ -27,14 +27,6 @@
                             {!! Form::select('expense_for', $users, null, ['class' => 'form-control select2', 'style' => 'width:100%']); !!}
                         </div>
                     </div>
-
-                     <div class="col-sm-3">
-                        <div class="form-group">
-                            {!! Form::label('created_by', __('lang_v1.added_by').':') !!}
-                            {!! Form::select('created_by', $users, null, ['class' => 'form-control select2', 'style' => 'width:100%']); !!}
-                        </div>
-                    </div>
-
                     <div class="col-md-3">
                         <div class="form-group">
                             {!! Form::label('expense_contact_filter',  __('contact.contact') . ':') !!}

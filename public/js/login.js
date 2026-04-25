@@ -1,5 +1,3 @@
-var recaptchaRendered = false;
-
 $(document).ready(function() {
     $('[data-toggle="tooltip"]').tooltip();
 
@@ -28,17 +26,6 @@ $(document).ready(function() {
                 }
                 form.validate().settings.ignore = ':disabled,:hidden';
                 return form.valid();
-            },
-            onStepChanged: function(event, currentIndex, priorIndex) {
-                // Render reCAPTCHA on last step
-                if (currentIndex === 2 && !recaptchaRendered) { // change 2 to your last step index
-                    if (typeof grecaptcha !== 'undefined') {
-                        grecaptcha.render('recaptcha-container', {
-                            'sitekey': window.RECAPTCHA_SITE_KEY
-                        });
-                        recaptchaRendered = true;
-                    }
-                }
             },
             onFinishing: function(event, currentIndex) {
                 form.validate().settings.ignore = ':disabled';
@@ -81,23 +68,7 @@ $(document).ready(function() {
                         email: function() {
                             return $('#email').val();
                         },
-                        is_disposable_email: true,
                     },
-                    dataFilter: function(response) {
-                        try {
-                            // jQuery Validate expects 'true' or a quoted string as the error message
-                            if (response === 'true' || response === true) {
-                                return '"true"';
-                            }
-                            var msg = (typeof response === 'string' && response.trim().length)
-                                ? response
-                                : ((typeof LANG !== 'undefined' && LANG.email_taken) ? LANG.email_taken : 'This email has already been taken.');
-                            // Escape quotes in message
-                            return '"' + msg.replace(/"/g, '\\"') + '"';
-                        } catch (e) {
-                            return '"' + ((typeof LANG !== 'undefined' && LANG.email_taken) ? LANG.email_taken : 'This email has already been taken.') + '"';
-                        }
-                    }
                 },
             },
             password: {
@@ -135,7 +106,9 @@ $(document).ready(function() {
             username: {
                 remote: LANG.invalid_username,
             },
-            // Do not override email.remote; we use server response via dataFilter
+            email: {
+                remote: LANG.email_taken,
+            },
         },
     });
 

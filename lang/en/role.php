@@ -16,7 +16,7 @@ return [
     'user' => 'User',
     'supplier' => 'Supplier',
     'customer' => 'Customer',
-    
+    'purchase' => 'Purchase & Stock Adjustment',
     'report' => 'Report',
 
     'user.view' => 'View user',
@@ -39,28 +39,10 @@ return [
     'product.update' => 'Edit product',
     'product.delete' => 'Delete product',
 
-    'purchase.view' => 'View purchase',
-    'purchase.view_own' => 'View own purchase',
-    'purchase.view_all' => 'View all purchase',
-    'purchase.create' => 'Add purchase',
-    'purchase.update' => 'Edit purchase',
-    'purchase.delete' => 'Delete purchase',
-    
-    'stock_adjustment.view' => 'View all stock adjustment',
-    'stock_adjustment.view_own' => 'View own stock adjustment',
-    'stock_adjustment.create' => 'Add stock adjustment',
-    'stock_adjustment.update' => 'Edit stock adjustment',
-    'stock_adjustment.delete' => 'Delete stock adjustment',
-    'purchase' => 'Purchase',
-    'stock_adjustment' => 'Stock Adjustment',
-
-    // Stock Transfer permissions
-    'stock_transfer' => 'Stock Transfer',
-    'stock_transfer.view' => 'View all stock transfer',
-    'stock_transfer.view_own' => 'View own stock transfer',
-    'stock_transfer.create' => 'Add stock transfer',
-    'stock_transfer.update' => 'Edit stock transfer',
-    'stock_transfer.delete' => 'Delete stock transfer',
+    'purchase.view' => 'View purchase & Stock Adjustment',
+    'purchase.create' => 'Add purchase & Stock Adjustment',
+    'purchase.update' => 'Edit purchase & Stock Adjustment',
+    'purchase.delete' => 'Delete purchase & Stock Adjustment',
 
     'sell.view' => 'View POS sell',
     'sell.create' => 'Add POS sell',

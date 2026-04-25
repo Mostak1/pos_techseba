@@ -86,7 +86,6 @@ return [
     'unique' => ':attribute është marrë tashmë.',
     'uploaded' => 'The :attribute failed to upload.',
     'url' => 'Formati i :attribute është i pasaktë.',
-    'indisposable' => 'Ky email nuk është i lejuar.',
 
     /*
     |--------------------------------------------------------------------------

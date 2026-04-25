@@ -146,24 +146,15 @@
         @endforeach
         @endif
         <div class="clearfix"></div>
-        <div class="col-sm-8 mb-5">
+        <div class="col-sm-8">
             <div class="form-group">
-                <div class="row">
-                    <div class="col-sm-8 product-description-label">
-                        {!! Form::label('product_description', __('lang_v1.product_description') . ':') !!}
-                    </div> 
-                </div>
+                {!! Form::label('product_description', __('lang_v1.product_description') . ':') !!}
                 {!! Form::textarea('product_description', !empty($duplicate_product->product_description) ? $duplicate_product->product_description : null, ['class' => 'form-control']); !!}
             </div>
         </div>
         <div class="col-sm-4">
             <div class="form-group">
-               
-                <div class="row">
-                    <div class="col-sm-6 image-label">
-                    {!! Form::label('image', __('lang_v1.product_image') . ':') !!}
-                    </div> 
-                </div>
+                {!! Form::label('image', __('lang_v1.product_image') . ':') !!}
                 {!! Form::file('image', ['id' => 'upload_image', 'accept' => 'image/*',
                 'required' => $is_image_required, 'class' => 'upload-element']); !!}
                 <small>
@@ -294,15 +285,7 @@
                             <input type="{{$cf_type}}" name="{{$db_field_name}}" id="{{$db_field_name}}" value="{{!empty($duplicate_product->$db_field_name) ? $duplicate_product->$db_field_name : null}}" class="form-control" placeholder="{{$cf}}">
 
                         @elseif($cf_type == 'dropdown')
-                            <!-- {!! Form::select($db_field_name, $dropdown, !empty($duplicate_product->$db_field_name) ? $duplicate_product->$db_field_name : null, ['placeholder' => $cf, 'class' => 'form-control select2']); !!} -->
-                            <select name="{{ $db_field_name }}" id="{{ $db_field_name }}" class="form-control select2">
-                                <option value="">{{ $cf }}</option>
-                                @foreach($dropdown as $option)
-                                    <option value="{{ $option }}" @if(!empty($duplicate_product->$db_field_name) && $option == $duplicate_product->$db_field_name) selected @endif>
-                                        {{ $option }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            {!! Form::select($db_field_name, $dropdown, !empty($duplicate_product->$db_field_name) ? $duplicate_product->$db_field_name : null, ['placeholder' => $cf, 'class' => 'form-control select2']); !!}
                         @endif
                     </div>
                 </div>

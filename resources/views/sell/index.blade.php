@@ -5,7 +5,7 @@
 
     <!-- Content Header (Page header) -->
     <section class="content-header no-print">
-        <h1  class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('sale.sells') <span id="sell_list_selected_range" class="tw-text-gray-600 tw-font-normal tw-text-base">{{ @format_date(\Carbon\Carbon::now()->subDays(29)) }} ~ {{ @format_date(\Carbon\Carbon::now()) }}</span>
+        <h1  class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">@lang('sale.sells')
         </h1>
     </section>
 
@@ -131,33 +131,16 @@
     <script type="text/javascript">
         $(document).ready(function() {
             //Date range as a button
-            var startLast30 = moment().subtract(29, 'days');
-            var endLast = moment();
-            
-            // Function to update heading with date range
-            function updateDateRangeHeading(start, end) {
-                if (start && end) {
-                    var formattedStart = start.format(moment_date_format);
-                    var formattedEnd = end.format(moment_date_format);
-                    $('#sell_list_selected_range').text(formattedStart + ' ~ ' + formattedEnd);
-                } else {
-                    // Reset to default (last 30 days)
-                    var defaultStart = moment().subtract(29, 'days').format(moment_date_format);
-                    var defaultEnd = moment().format(moment_date_format);
-                    $('#sell_list_selected_range').text(defaultStart + ' ~ ' + defaultEnd);
-                }
-            }
-            
             $('#sell_list_filter_date_range').daterangepicker(
-                $.extend(true, {}, dateRangeSettings, { startDate: startLast30, endDate: endLast }),
+                dateRangeSettings,
                 function(start, end) {
-                    updateDateRangeHeading(start, end);
+                    $('#sell_list_filter_date_range').val(start.format(moment_date_format) + ' ~ ' + end.format(
+                        moment_date_format));
                     sell_table.ajax.reload();
                 }
             );
             $('#sell_list_filter_date_range').on('cancel.daterangepicker', function(ev, picker) {
                 $('#sell_list_filter_date_range').val('');
-                updateDateRangeHeading(null, null);
                 sell_table.ajax.reload();
             });
 

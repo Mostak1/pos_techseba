@@ -105,6 +105,5 @@ return [
     'tax_number1' => 'مالیه نمبر ۱',
     'tax_number2' => 'مالیه نمبر ۲',
     'is_active' => 'فعال',
-     'created_by' => 'جوړ شوی په',
-     'additional_number_secondary' => 'اضافي شمېره/ثانوي شمېره',
- ];
+    'created_by' => 'جوړ شوی په',
+];

@@ -105,6 +105,5 @@ return [
     'tax_number1' => 'ເລກພາສີ 1',
     'tax_number2' => 'ເລກພາສີ 2',
     'is_active' => 'ໃຊ້ງານ',
-     'created_by' => 'ສ້າງໂດຍ',
-     'additional_number_secondary' => 'ໝາຍເລກເພີ່ມເຕີມ/ໝາຍເລກຮອງ',
- ];
+    'created_by' => 'ສ້າງໂດຍ',
+];

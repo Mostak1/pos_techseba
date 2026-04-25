@@ -87,7 +87,6 @@ return [
     'unique' => ':attribute Daha önceden alındı.',
     'uploaded' => ':attribute Yüklenirken hata oluştu.',
     'url' => ':attribute Geçersiz Format.',
-    'indisposable' => 'Bu e-posta adresine izin verilmiyor.',
 
     /*
     |--------------------------------------------------------------------------

@@ -15,16 +15,15 @@ use App\TaxRate;
 use App\Transaction;
 use App\TransactionSellLine;
 use App\TypesOfService;
+use App\Variation;
 use App\User;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
-use App\Variation;
 use App\Warranty;
 use DB;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Spatie\Activitylog\Models\Activity;
@@ -98,49 +97,211 @@ class SellController extends Controller
 
             $sells = $this->transactionUtil->getListSells($business_id, $sale_type);
 
-            // Apply all filters in a single reusable method
-            $this->applySellListFilters($sells, $business_id, $sale_type, false);
+            // only display sell invoice we add it because project invoive show in sell list
+            if($sale_type == 'sell'){
+                $sells->where(function ($query) {
+                    $query->where('transactions.sub_type', '!=', 'project_invoice')
+                          ->orWhereNull('transactions.sub_type');
+                });
+            }         
 
-            // Create cache key based on all filters for count query optimization
-            $cache_key_params = [
-                'business_id' => $business_id,
-                'sale_type' => $sale_type,
-                'location_id' => request()->input('location_id'),
-                'customer_id' => request()->input('customer_id'),
-                'payment_status' => request()->input('payment_status'),
-                'payment_method' => request()->input('payment_method'),
-                'start_date' => request()->input('start_date'),
-                'end_date' => request()->input('end_date'),
-                'created_by' => request()->input('created_by'),
-                'user_id' => auth()->id(),
-                'only_shipments' => request()->input('only_shipments'),
-                'shipping_status' => request()->input('shipping_status'),
-                'source' => request()->input('source'),
-                'crm_is_order_request' => request()->input('crm_is_order_request'),
-                'only_subscriptions' => request()->input('only_subscriptions'),
-                'res_waiter_id' => request()->input('res_waiter_id'),
-                'sub_type' => request()->input('sub_type'),
-                'status' => request()->input('status'),
-                'sales_cmsn_agnt' => request()->input('sales_cmsn_agnt'),
-                'service_staffs' => request()->input('service_staffs'),
-                'only_pending_shipments' => request()->input('only_pending_shipments'),
-                'for_dashboard_sales_order' => request()->input('for_dashboard_sales_order'),
-                'delivery_person' => request()->input('delivery_person'),
-                'is_zatca' => request()->input('is_zatca'),
-                'zatca_status' => request()->input('zatca_status'),
-                'rewards_only' => request()->input('rewards_only'),
-                'commission_agent' => request()->input('commission_agent'),
-            ];
-            $cache_key = 'sell_list_count_' . md5(json_encode($cache_key_params));
+            $permitted_locations = auth()->user()->permitted_locations();
+            if ($permitted_locations != 'all') {
+                $sells->whereIn('transactions.location_id', $permitted_locations);
+            }
 
-            // Get total count using cache (expires in 60 seconds)
-            $total_records = Cache::remember($cache_key, 300, function () use ($business_id, $sale_type) {
-                $count_query = $this->transactionUtil->getListSells($business_id, $sale_type, true);
-                // Apply same filters (count-safe)
-                $this->applySellListFilters($count_query, $business_id, $sale_type, true);
-                // IMPORTANT: do NOT groupBy here; just count distinct ids
-                return $count_query->distinct('transactions.id')->count('transactions.id');
-            });
+            //Add condition for created_by,used in sales representative sales report
+            if (request()->has('created_by')) {
+                $created_by = request()->get('created_by');
+                if (! empty($created_by)) {
+                    $sells->where('transactions.created_by', $created_by);
+                }
+            }
+
+            $partial_permissions = ['view_own_sell_only', 'view_commission_agent_sell', 'access_own_shipping', 'access_commission_agent_shipping'];
+            if (! auth()->user()->can('direct_sell.view')) {
+                $sells->where(function ($q) {
+                    if (auth()->user()->hasAnyPermission(['view_own_sell_only', 'access_own_shipping'])) {
+                        $q->where('transactions.created_by', request()->session()->get('user.id'));
+                    }
+
+                    //if user is commission agent display only assigned sells
+                    if (auth()->user()->hasAnyPermission(['view_commission_agent_sell', 'access_commission_agent_shipping'])) {
+                        $q->orWhere('transactions.commission_agent', request()->session()->get('user.id'));
+                    }
+                });
+            }
+
+            $only_shipments = request()->only_shipments == 'true' ? true : false;
+            if ($only_shipments) {
+                $sells->whereNotNull('transactions.shipping_status');
+
+                if (auth()->user()->hasAnyPermission(['access_pending_shipments_only'])) {
+                    $sells->where('transactions.shipping_status', '!=', 'delivered');
+                }
+            }
+
+            if (! $is_admin && ! $only_shipments && $sale_type != 'sales_order') {
+                $payment_status_arr = [];
+                if (auth()->user()->can('view_paid_sells_only')) {
+                    $payment_status_arr[] = 'paid';
+                }
+
+                if (auth()->user()->can('view_due_sells_only')) {
+                    $payment_status_arr[] = 'due';
+                }
+
+                if (auth()->user()->can('view_partial_sells_only')) {
+                    $payment_status_arr[] = 'partial';
+                }
+
+                if (empty($payment_status_arr)) {
+                    if (auth()->user()->can('view_overdue_sells_only')) {
+                        $sells->OverDue();
+                    }
+                } else {
+                    if (auth()->user()->can('view_overdue_sells_only')) {
+                        $sells->where(function ($q) use ($payment_status_arr) {
+                            $q->whereIn('transactions.payment_status', $payment_status_arr)
+                            ->orWhere(function ($qr) {
+                                $qr->OverDue();
+                            });
+                        });
+                    } else {
+                        $sells->whereIn('transactions.payment_status', $payment_status_arr);
+                    }
+                }
+            }
+
+            if (! empty(request()->input('payment_status')) && request()->input('payment_status') != 'overdue') {
+                $sells->where('transactions.payment_status', request()->input('payment_status'));
+            } elseif (request()->input('payment_status') == 'overdue') {
+                $sells->whereIn('transactions.payment_status', ['due', 'partial'])
+                    ->whereNotNull('transactions.pay_term_number')
+                    ->whereNotNull('transactions.pay_term_type')
+                    ->whereRaw("IF(transactions.pay_term_type='days', DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number DAY) < CURDATE(), DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number MONTH) < CURDATE())");
+            }
+
+            //Add condition for location,used in sales representative expense report
+            if (request()->has('location_id')) {
+                $location_id = request()->get('location_id');
+                if (! empty($location_id)) {
+                    $sells->where('transactions.location_id', $location_id);
+                }
+            }
+
+            if (! empty(request()->input('rewards_only')) && request()->input('rewards_only') == true) {
+                $sells->where(function ($q) {
+                    $q->whereNotNull('transactions.rp_earned')
+                    ->orWhere('transactions.rp_redeemed', '>', 0);
+                });
+            }
+
+            if (! empty(request()->customer_id)) {
+                $customer_id = request()->customer_id;
+                $sells->where('contacts.id', $customer_id);
+            }
+            if (! empty(request()->start_date) && ! empty(request()->end_date)) {
+                $start = request()->start_date;
+                $end = request()->end_date;
+                $sells->whereDate('transactions.transaction_date', '>=', $start)
+                            ->whereDate('transactions.transaction_date', '<=', $end);
+            }
+
+            //Check is_direct sell
+            if (request()->has('is_direct_sale')) {
+                $is_direct_sale = request()->is_direct_sale;
+                if ($is_direct_sale == 0) {
+                    $sells->where('transactions.is_direct_sale', 0);
+                    $sells->whereNull('transactions.sub_type');
+                }
+            }
+
+            //Add condition for commission_agent,used in sales representative sales with commission report
+            if (request()->has('commission_agent')) {
+                $commission_agent = request()->get('commission_agent');
+                if (! empty($commission_agent)) {
+                    $sells->where('transactions.commission_agent', $commission_agent);
+                }
+            }
+
+            if (! empty(request()->input('source'))) {
+                //only exception for woocommerce
+                if (request()->input('source') == 'woocommerce') {
+                    $sells->whereNotNull('transactions.woocommerce_order_id');
+                } else {
+                    $sells->where('transactions.source', request()->input('source'));
+                }
+            }
+
+            if ($is_crm) {
+                $sells->addSelect('transactions.crm_is_order_request');
+
+                if (request()->has('crm_is_order_request')) {
+                    $sells->where('transactions.crm_is_order_request', 1);
+                }
+            }
+
+            if (request()->only_subscriptions) {
+                $sells->where(function ($q) {
+                    $q->whereNotNull('transactions.recur_parent_id')
+                        ->orWhere('transactions.is_recurring', 1);
+                });
+            }
+
+            if (! empty(request()->list_for) && request()->list_for == 'service_staff_report') {
+                $sells->whereNotNull('transactions.res_waiter_id');
+            }
+
+            if (! empty(request()->res_waiter_id)) {
+                $sells->where('transactions.res_waiter_id', request()->res_waiter_id);
+            }
+
+            if (! empty(request()->input('sub_type'))) {
+                $sells->where('transactions.sub_type', request()->input('sub_type'));
+            }
+
+            if (! empty(request()->input('created_by'))) {
+                $sells->where('transactions.created_by', request()->input('created_by'));
+            }
+
+            if (! empty(request()->input('status'))) {
+                $sells->where('transactions.status', request()->input('status'));
+            }
+
+            if (! empty(request()->input('sales_cmsn_agnt'))) {
+                $sells->where('transactions.commission_agent', request()->input('sales_cmsn_agnt'));
+            }
+
+            if (! empty(request()->input('service_staffs'))) {
+                $sells->where('transactions.res_waiter_id', request()->input('service_staffs'));
+            }
+
+            $only_pending_shipments = request()->only_pending_shipments == 'true' ? true : false;
+            if ($only_pending_shipments) {
+                $sells->where('transactions.shipping_status', '!=', 'delivered')
+                        ->whereNotNull('transactions.shipping_status');
+                $only_shipments = true;
+            }
+
+            if (! empty(request()->input('shipping_status'))) {
+                $sells->where('transactions.shipping_status', request()->input('shipping_status'));
+            }
+
+            if (! empty(request()->input('for_dashboard_sales_order'))) {
+                $sells->whereIn('transactions.status', ['partial', 'ordered'])
+                    ->orHavingRaw('so_qty_remaining > 0');
+            }
+
+            if ($sale_type == 'sales_order') {
+                if (! auth()->user()->can('so.view_all') && auth()->user()->can('so.view_own')) {
+                    $sells->where('transactions.created_by', request()->session()->get('user.id'));
+                }
+            }
+
+            if (! empty(request()->input('delivery_person'))) {
+                $sells->where('transactions.delivery_person', request()->input('delivery_person'));
+            }
 
             $sells->groupBy('transactions.id');
 
@@ -185,75 +346,19 @@ class SellController extends Controller
             }
 
             //$business_details = $this->businessUtil->getDetails($business_id);
-            if ($is_crm) {
-                // Ensure crm_is_order_request is available for UI labels
-                $sells->addSelect('transactions.crm_is_order_request');
-            }
-
             if ($this->businessUtil->isModuleEnabled('subscription')) {
                 $sells->addSelect('transactions.is_recurring', 'transactions.recur_parent_id');
             }
             $sales_order_statuses = Transaction::sales_order_statuses();
-
-            // for zatca module Retrieve the 'is_zatca' parameter from the request; default to 0 if not provided and only comes 1 from zatca module
-            $is_zatca = !empty(request()->input('is_zatca')) ? request()->input('is_zatca') : 0;
-
-            if ($is_zatca) {
-                $sells->addSelect('transactions.zatca_status');
-
-                if (! empty(request()->input('zatca_status'))) {
-                    if (request()->input('zatca_status') == 'pending') {
-                        $sells->whereNull('transactions.zatca_status');
-                    } else {
-                        $sells->where('transactions.zatca_status', request()->input('zatca_status'));
-                    }
-                }
-
-                // Only include locations that have a non-empty sync_from_datetime set in bl.zatca_sync_from_datetime
-                $sells->whereNotNull('bl.zatca_sync_from_datetime');
-                // Include transactions on or after the location's sync_from_datetime
-                $sells->whereRaw('transactions.transaction_date >= bl.zatca_sync_from_datetime');
-            }
-
-            // Expose shipment-only flag to table rendering
-            $only_shipments = request()->only_shipments == 'true' ? true : false;
-
             $datatable = Datatables::of($sells)
                 ->addColumn(
                     'action',
-                    function ($row) use ($only_shipments, $is_admin, $sale_type, $is_zatca) {
-
-                        // this action button for zatca module
-                        if ($is_zatca) {
-                            if ($row->zatca_status == 'success') {
-                                return '<div class="btn-group">
-                                <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info tw-w-max dropdown-toggle"
-                                    data-toggle="dropdown" aria-expanded="false">' .
-                                    __('messages.actions') .
-                                    '<span class="caret"></span><span class="sr-only">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-left" role="menu">
-                                    <li><a class="download-xml" href="'.action([\Modules\ZatcaIntegrationKsa\Http\Controllers\ZatcaInvoiceController::class, 'downloadXml'], [$row->id]).'">
-                                            <i class="fas fa-file-download"></i> '.__('zatcaintegrationksa::lang.download_xml').'
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="download-a3-pdf" target="_blank" href="'.action([\Modules\ZatcaIntegrationKsa\Http\Controllers\ZatcaInvoiceController::class, 'sale_print_pdf'], [$row->id]).'">
-                                            <i class="fas fa-file-download"></i> '.__('zatcaintegrationksa::lang.download_a3_pdf').'
-                                        </a>
-                                    </li>
-                                </ul></div>';
-                            }else {
-                                return '<a href="' . action([\Modules\ZatcaIntegrationKsa\Http\Controllers\ZatcaInvoiceController::class, 'sycs_sale'], [$row->id]) . '" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info tw-w-max sycs_sale">' . __('zatcaintegrationksa::lang.sync') . '</a>';
-                            }
-
-
-                        }
+                    function ($row) use ($only_shipments, $is_admin, $sale_type) {
                         $html = '<div class="btn-group">
-                                    <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-info tw-w-max dropdown-toggle"
-                                        data-toggle="dropdown" aria-expanded="false">' .
-                        __('messages.actions') .
-                            '<span class="caret"></span><span class="sr-only">Toggle Dropdown
+                                    <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-info tw-w-max dropdown-toggle" 
+                                        data-toggle="dropdown" aria-expanded="false">'.
+                                        __('messages.actions').
+                                        '<span class="caret"></span><span class="sr-only">Toggle Dropdown
                                         </span>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-left" role="menu">';
@@ -379,13 +484,13 @@ class SellController extends Controller
                 ->editColumn(
                     'discount_amount',
                     function ($row) {
-                        $discount = !empty($row->discount_amount) ? $row->discount_amount : 0;
+                        $discount = ! empty($row->discount_amount) ? $row->discount_amount : 0;
 
-                        if (!empty($discount) && $row->discount_type == 'percentage') {
+                        if (! empty($discount) && $row->discount_type == 'percentage') {
                             $discount = $row->total_before_tax * ($discount / 100);
                         }
 
-                        return '<span class="total-discount" data-orig-value="' . $discount . '">' . $this->transactionUtil->num_f($discount, true) . '</span>';
+                        return '<span class="total-discount" data-orig-value="'.$discount.'">'.$this->transactionUtil->num_f($discount, true).'</span>';
                     }
                 )
                 ->editColumn('transaction_date', '{{@format_datetime($transaction_date)}}')
@@ -403,15 +508,15 @@ class SellController extends Controller
                 )
                 ->addColumn('total_remaining', function ($row) {
                     $total_remaining = $row->final_total - $row->total_paid;
-                    $total_remaining_html = '<span class="payment_due" data-orig-value="' . $total_remaining . '">' . $this->transactionUtil->num_f($total_remaining, true) . '</span>';
+                    $total_remaining_html = '<span class="payment_due" data-orig-value="'.$total_remaining.'">'.$this->transactionUtil->num_f($total_remaining, true).'</span>';
 
                     return $total_remaining_html;
                 })
                 ->addColumn('return_due', function ($row) {
                     $return_due_html = '';
-                    if (!empty($row->return_exists)) {
+                    if (! empty($row->return_exists)) {
                         $return_due = $row->amount_return - $row->return_paid;
-                        $return_due_html .= '<a href="' . action([\App\Http\Controllers\TransactionPaymentController::class, 'show'], [$row->return_transaction_id]) . '" class="view_purchase_return_payment_modal"><span class="sell_return_due" data-orig-value="' . $return_due . '">' . $this->transactionUtil->num_f($return_due, true) . '</span></a>';
+                        $return_due_html .= '<a href="'.action([\App\Http\Controllers\TransactionPaymentController::class, 'show'], [$row->return_transaction_id]).'" class="view_purchase_return_payment_modal"><span class="sell_return_due" data-orig-value="'.$return_due.'">'.$this->transactionUtil->num_f($return_due, true).'</span></a>';
                     }
 
                     return $return_due_html;
@@ -483,32 +588,6 @@ class SellController extends Controller
 
                     return $status;
                 })
-                ->editColumn('zatca_status', function ($row) use ($is_zatca) {
-                    $status = '';
-                    if($is_zatca){
-                        if (empty($row->zatca_status) || is_null($row->zatca_status)) {
-                            $status = '<small class="label bg-primary tw-dw-btn-xs no-print">'.__('zatcaintegrationksa::lang.pending').'</small>';
-                        } elseif ($row->zatca_status == 'success') {
-                            $status = '<small class="label bg-light-green tw-dw-btn-xs no-print">' . ucfirst($row->zatca_status) . '</small>';
-                        } elseif ($row->zatca_status == 'failed') {
-                                $lastDoc = \Modules\ZatcaIntegrationKsa\Entities\ZatcaDocument::where('transaction_id', $row->id)
-                                    ->where('sent_to_zatca_status', 'failed')
-                                    ->orderBy('created_at', 'desc')
-                                    ->latest()
-                                    ->first();
-
-                                if ($lastDoc && $lastDoc->response_source == 'self' && !empty($lastDoc->response)) {
-                                    $safeMsg = htmlspecialchars($lastDoc->response, ENT_QUOTES, 'UTF-8');
-                                    $status = '<small class="label bg-red tw-dw-btn-xs no-print mb-1">' . ucfirst($row->zatca_status) . '</small><br><span class="text-danger">' . $safeMsg . '</span>';
-                                } else if ($lastDoc) {
-                                    $label = '<small class="label bg-red tw-dw-btn-xs no-print mb-5">' . ucfirst($row->zatca_status) . '</small>';
-                                    $button = '<a href="' . action([\Modules\ZatcaIntegrationKsa\Http\Controllers\ZatcaInvoiceController::class, 'showInvoiceError'], ['id' => $row->id]) . '" class="btn btn-xs btn-danger no-print mt-2 status_fail" style="margin-top: 10px;">' . e(__('zatcaintegrationksa::lang.view_error')) . '</a>';
-                                    $status = $label . '<br>' . $button;
-                                }
-                        }
-                    }
-                    return $status;
-                })
                 ->editColumn('so_qty_remaining', '{{@format_quantity($so_qty_remaining)}}')
                 ->setRowAttr([
                     'data-href' => function ($row) {
@@ -519,11 +598,9 @@ class SellController extends Controller
                         }
                     }, ]);
 
-            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status', 'zatca_status'];
+            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status'];
 
             return $datatable->rawColumns($rawColumns)
-                      ->skipTotalRecords()
-                      ->setFilteredRecords($total_records)
                       ->make(true);
         }
 
@@ -835,16 +912,10 @@ class SellController extends Controller
         //Check if return exist then not allowed
         if ($this->transactionUtil->isReturnExist($id)) {
             return back()->with('status', ['success' => 0,
-                'msg' => __('lang_v1.return_exist')]);
+                'msg' => __('lang_v1.return_exist'), ]);
         }
 
         $business_id = request()->session()->get('user.business_id');
-
-        $moduleUtil = new ModuleUtil();
-
-        if (! $moduleUtil->isSubscribed($business_id)) {
-            return $moduleUtil->expiredResponse();
-        }
 
         $business_details = $this->businessUtil->getDetails($business_id);
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
@@ -853,15 +924,6 @@ class SellController extends Controller
                             ->with(['price_group', 'types_of_service', 'media', 'media.uploaded_by_user'])
                             ->whereIn('type', ['sell', 'sales_order'])
                             ->findorfail($id);
-
-        // If ZATCA module is installed and this transaction is successfully synced, prevent edit
-       
-        if ($moduleUtil->isModuleInstalled('ZatcaIntegrationKsa')) {
-            if (!empty($transaction) && $transaction->zatca_status === 'success') {
-                return back()->with('status', ['success' => 0,
-                    'msg' => __('lang_v1.invoice_synced_to_zatca_cannot_be_edited')]);
-            }
-        }
 
         if ($transaction->type == 'sales_order' && ! auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
@@ -1626,283 +1688,5 @@ class SellController extends Controller
 
         echo 'Mapping reset success';
         exit;
-    }
-
-    /**
-     * Apply all filters for Sell list & count queries.
-     *
-     * $for_count=true omits HAVING that depends on selected aliases.
-     */
-    protected function applySellListFilters($query, $business_id, $sale_type, $for_count = false)
-    {
-        // Exclude project invoices from sell list
-        if ($sale_type == 'sell') {
-            $query->where(function ($q) {
-                $q->where('transactions.sub_type', '!=', 'project_invoice')
-                  ->orWhereNull('transactions.sub_type');
-            });
-        }
-
-        // Location permissions
-        $permitted_locations = auth()->user()->permitted_locations();
-        if ($permitted_locations != 'all') {
-            $query->whereIn('transactions.location_id', $permitted_locations);
-        }
-
-        // Created by filter
-        if (request()->has('created_by')) {
-            $created_by = request()->get('created_by');
-            if (! empty($created_by)) {
-                $query->where('transactions.created_by', $created_by);
-            }
-        }
-
-        // Ownership / commission permissions
-        if (! auth()->user()->can('direct_sell.view')) {
-            $query->where(function ($q) {
-                if (auth()->user()->hasAnyPermission(['view_own_sell_only', 'access_own_shipping'])) {
-                    $q->where('transactions.created_by', request()->session()->get('user.id'));
-                }
-
-                if (auth()->user()->hasAnyPermission(['view_commission_agent_sell', 'access_commission_agent_shipping'])) {
-                    $q->orWhere('transactions.commission_agent', request()->session()->get('user.id'));
-                }
-            });
-        }
-
-        // Shipment filters
-        $only_shipments = request()->only_shipments == 'true' ? true : false;
-        if ($only_shipments) {
-            $query->whereNotNull('transactions.shipping_status');
-
-            if (auth()->user()->hasAnyPermission(['access_pending_shipments_only'])) {
-                $query->where('transactions.shipping_status', '!=', 'delivered');
-            }
-        }
-
-        // Payment status visibility restrictions
-        $is_admin = $this->businessUtil->is_admin(auth()->user());
-        if (! $is_admin && ! $only_shipments && $sale_type != 'sales_order') {
-            $payment_status_arr = [];
-            if (auth()->user()->can('view_paid_sells_only')) {
-                $payment_status_arr[] = 'paid';
-            }
-            if (auth()->user()->can('view_due_sells_only')) {
-                $payment_status_arr[] = 'due';
-            }
-            if (auth()->user()->can('view_partial_sells_only')) {
-                $payment_status_arr[] = 'partial';
-            }
-
-            if (empty($payment_status_arr)) {
-                if (auth()->user()->can('view_overdue_sells_only')) {
-                    $query->OverDue();
-                }
-            } else {
-                if (auth()->user()->can('view_overdue_sells_only')) {
-                    $query->where(function ($q) use ($payment_status_arr) {
-                        $q->whereIn('transactions.payment_status', $payment_status_arr)
-                          ->orWhere(function ($qr) {
-                              $qr->OverDue();
-                          });
-                    });
-                } else {
-                    $query->whereIn('transactions.payment_status', $payment_status_arr);
-                }
-            }
-        }
-
-        // Explicit payment status filter
-        if (! empty(request()->input('payment_status')) && request()->input('payment_status') != 'overdue') {
-            $query->where('transactions.payment_status', request()->input('payment_status'));
-        } elseif (request()->input('payment_status') == 'overdue') {
-            $query->whereIn('transactions.payment_status', ['due', 'partial'])
-                  ->whereNotNull('transactions.pay_term_number')
-                  ->whereNotNull('transactions.pay_term_type')
-                  ->whereRaw("IF(transactions.pay_term_type='days', DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number DAY) < CURDATE(), DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number MONTH) < CURDATE())");
-        }
-
-        // Location filter
-        if (request()->has('location_id')) {
-            $location_id = request()->get('location_id');
-            if (! empty($location_id)) {
-                $query->where('transactions.location_id', $location_id);
-            }
-        }
-
-        // Rewards-only filter
-        if (!empty(request()->input('rewards_only')) && request()->input('rewards_only') == true) {
-            $query->where(function ($q) {
-                $q->whereNotNull('transactions.rp_earned')
-                  ->orWhere('transactions.rp_redeemed', '>', 0);
-            });
-        }
-
-        // Customer filter
-        if (! empty(request()->customer_id)) {
-            $query->where('contacts.id', request()->customer_id);
-        }
-
-        // Date range
-        if (! empty(request()->start_date) && ! empty(request()->end_date)) {
-                $start = request()->start_date . ' 00:00:00';
-                $end = request()->end_date . ' 23:59:59';
-                $query->where('transactions.transaction_date', '>=', $start)
-                ->where('transactions.transaction_date', '<=', $end);
-        }
-
-        // Direct sale flag
-        if (request()->has('is_direct_sale')) {
-            $is_direct_sale = request()->is_direct_sale;
-            if ($is_direct_sale == 0) {
-                $query->where('transactions.is_direct_sale', 0);
-                $query->whereNull('transactions.sub_type');
-            }
-        }
-
-        // Commission agent
-        if (request()->has('commission_agent')) {
-            $commission_agent = request()->get('commission_agent');
-            if (! empty($commission_agent)) {
-                $query->where('transactions.commission_agent', $commission_agent);
-            }
-        }
-
-        // Source
-        if (! empty(request()->input('source'))) {
-            if (request()->input('source') == 'woocommerce') {
-                $query->whereNotNull('transactions.woocommerce_order_id');
-            } else {
-                $query->where('transactions.source', request()->input('source'));
-            }
-        }
-
-        // CRM order request
-        if ($this->moduleUtil->isModuleInstalled('Crm') && request()->has('crm_is_order_request')) {
-            $query->where('transactions.crm_is_order_request', 1);
-        }
-
-        // Subscriptions only
-        if (request()->only_subscriptions) {
-            $query->where(function ($q) {
-                $q->whereNotNull('transactions.recur_parent_id')
-                  ->orWhere('transactions.is_recurring', 1);
-            });
-        }
-
-        // Service staff report / waiter
-        if (! empty(request()->list_for) && request()->list_for == 'service_staff_report') {
-            $query->whereNotNull('transactions.res_waiter_id');
-        }
-        if (! empty(request()->res_waiter_id)) {
-            $query->where('transactions.res_waiter_id', request()->res_waiter_id);
-        }
-
-        // Sub type / created_by / status
-        if (! empty(request()->input('sub_type'))) {
-            $query->where('transactions.sub_type', request()->input('sub_type'));
-        }
-        if (! empty(request()->input('created_by'))) {
-            $query->where('transactions.created_by', request()->input('created_by'));
-        }
-        if (! empty(request()->input('status'))) {
-            $query->where('transactions.status', request()->input('status'));
-        }
-
-        // Commission agent filters
-        if (! empty(request()->input('sales_cmsn_agnt'))) {
-            $query->where('transactions.commission_agent', request()->input('sales_cmsn_agnt'));
-        }
-        if (! empty(request()->input('service_staffs'))) {
-            $query->where('transactions.res_waiter_id', request()->input('service_staffs'));
-        }
-
-        // Pending shipments only
-        $only_pending_shipments = request()->only_pending_shipments == 'true' ? true : false;
-        if ($only_pending_shipments) {
-            $query->where('transactions.shipping_status', '!=', 'delivered')
-                  ->whereNotNull('transactions.shipping_status');
-        }
-
-        // Shipping status filter
-        if (! empty(request()->input('shipping_status'))) {
-            $query->where('transactions.shipping_status', request()->input('shipping_status'));
-        }
-
-        // Dashboard sales order
-        if (! empty(request()->input('for_dashboard_sales_order'))) {
-            if ($for_count) {
-                $query->whereIn('transactions.status', ['partial', 'ordered']);
-            } else {
-                $query->whereIn('transactions.status', ['partial', 'ordered'])
-                      ->orHavingRaw('so_qty_remaining > 0');
-            }
-        }
-
-        // Sales order view restrictions
-        if ($sale_type == 'sales_order') {
-            if (! auth()->user()->can('so.view_all') && auth()->user()->can('so.view_own')) {
-                $query->where('transactions.created_by', request()->session()->get('user.id'));
-            }
-        }
-
-        // Delivery person
-        if (! empty(request()->input('delivery_person'))) {
-            $query->where('transactions.delivery_person', request()->input('delivery_person'));
-        }
-
-        // ZATCA specific
-        $is_zatca = !empty(request()->input('is_zatca')) ? request()->input('is_zatca') : 0;
-        if ($is_zatca) {
-            if (! empty(request()->input('zatca_status'))) {
-                if (request()->input('zatca_status') == 'pending') {
-                    $query->whereNull('transactions.zatca_status');
-                } else {
-                    $query->where('transactions.zatca_status', request()->input('zatca_status'));
-                }
-            }
-
-            $query->whereNotNull('bl.zatca_sync_from_datetime');
-            $query->whereRaw('transactions.transaction_date >= bl.zatca_sync_from_datetime');
-        }
-
-        // Payment method filter
-        if (!empty(request()->input('payment_method'))) {
-            $query->whereHas('payment_lines', function ($q) {
-                $q->where('method', request()->input('payment_method'));
-            });
-        }
-
-        return $query;
-    }
-
-    /**
-     * Checks if invoice number exists
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function checkInvoiceNumber(Request $request)
-    {
-        $business_id = $request->session()->get('user.business_id');
-        $invoice_no = $request->input('invoice_no');
-        $transaction_id = $request->input('transaction_id');
-
-        $query = Transaction::where('business_id', $business_id)
-                        ->where('invoice_no', $invoice_no);
-        
-        if (!empty($transaction_id)) {
-            $query->where('id', '!=', $transaction_id);
-        }
-        
-        $count = $query->count();
-        
-        if ($count == 0) {
-            echo 'true';
-            exit;
-        } else {
-            echo 'false';
-            exit;
-        }
     }
 }

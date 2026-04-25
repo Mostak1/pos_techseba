@@ -662,16 +662,7 @@
 						</p>
 					</div>
 				@endif
-				@if(!empty($receipt_details->total_previous_due))
-					<div class="flex-box">
-						<p class="width-50 text-right">
-							{!! $receipt_details->total_previous_due_label !!}
-						</p>
-						<p class="width-50 text-right">
-							{{$receipt_details->total_previous_due}}
-						</p>
-					</div>
-				@endif
+
 				@if(!empty($receipt_details->all_due))
 					<div class="flex-box">
 						<p class="width-50 text-right">
@@ -682,7 +673,6 @@
 						</p>
 					</div>
 				@endif
-				
 			@endif
             <div class="border-bottom width-100">&nbsp;</div>
             @if(empty($receipt_details->hide_price) && !empty($receipt_details->tax_summary_label) )

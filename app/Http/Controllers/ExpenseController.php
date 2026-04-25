@@ -109,13 +109,6 @@ class ExpenseController extends Controller
                 }
             }
 
-            if (request()->has('created_by')) {
-                $created_by = request()->get('created_by');
-                if (! empty($created_by)) {
-                    $expenses->where('transactions.created_by', $created_by);
-                }
-            }
-
             if (request()->has('contact_id')) {
                 $contact_id = request()->get('contact_id');
                 if (! empty($contact_id)) {
@@ -326,7 +319,6 @@ class ExpenseController extends Controller
         $expense_categories = ExpenseCategory::where('business_id', $business_id)
                                 ->whereNull('parent_id')
                                 ->pluck('name', 'id');
-
         $users = User::forDropdown($business_id, true, true);
 
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);

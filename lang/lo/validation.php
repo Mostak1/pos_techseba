@@ -115,7 +115,6 @@ return [
     'unique' => 'The :attribute ຖືກປະຕິບັດແລ້ວ.',
     'uploaded' => 'The :attribute ລົ້ມເຫຼວໃນການອັບໂຫລດ.',
     'url' => 'The :attribute ຮູບແບບບໍ່ຖືກຕ້ອງ.',
-    'indisposable' => 'ອີເມວນີ້ບໍ່ຖືກອະນຸຍາດ.',
     'uuid' => 'The :attribute ຕ້ອງເປັນ UUID ທີ່ຖືກຕ້ອງ.',
 
     /*

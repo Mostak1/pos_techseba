@@ -87,7 +87,6 @@ return [
     'unique' => ':attribute ya ha sido registrado.',
     'uploaded' => 'Subir :attribute ha fallado.',
     'url' => 'El formato :attribute es inválido.',
-    'indisposable' => 'Este correo electrónico no está permitido.',
 
     /*
     |--------------------------------------------------------------------------

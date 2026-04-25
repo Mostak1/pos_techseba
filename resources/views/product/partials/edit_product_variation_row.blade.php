@@ -80,11 +80,11 @@
                         {!! Form::hidden($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][variation_value_id]', $variation->variation_value_id); !!}
                     </td>
                     <td class="{{$class}}">
-                        <div class="width-50 f-left">
+                        <div class="col-sm-6">
                             {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][default_purchase_price]', @num_format($variation->default_purchase_price), ['class' => 'form-control input-sm variable_dpp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
                         </div>
 
-                        <div class="width-50 f-left">
+                        <div class="col-sm-6">
                             {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][dpp_inc_tax]', @num_format($variation->dpp_inc_tax), ['class' => 'form-control input-sm variable_dpp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
                         </div>
                     </td>
@@ -96,41 +96,23 @@
 
                         {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][sell_price_inc_tax]', @num_format($variation->sell_price_inc_tax), ['class' => 'form-control input-sm variable_dsp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
                     </td>
-                    <td class="variation-image-cell">
+                    <td>
                         @php 
                             $action = !empty($action) ? $action : '';
                         @endphp
-                        <div class="variation-image-upload">
-                            {{-- Existing images --}}
-                            @if($action !== 'duplicate')
-                                <div class="existing-images" style="margin-bottom: 5px;">
-                                    @foreach($variation->media as $media)
-                                        <div class="img-thumbnail" style="display: inline-block; position: relative; margin-right: 3px; margin-bottom: 3px;">
-                                            <span class="badge bg-red delete-media" style="position: absolute; top: -5px; right: -5px; cursor: pointer;" data-href="{{ action([\App\Http\Controllers\ProductController::class, 'deleteMedia'], ['media_id' => $media->id])}}"><i class="fas fa-times"></i></span>
-                                            {!! $media->thumbnail() !!}
-                                        </div>
-                                    @endforeach
+                        @if($action !== 'duplicate')
+                            @foreach($variation->media as $media)
+                                <div class="img-thumbnail">
+                                    <span class="badge bg-red delete-media" data-href="{{ action([\App\Http\Controllers\ProductController::class, 'deleteMedia'], ['media_id' => $media->id])}}"><i class="fas fa-times"></i></span>
+                                    {!! $media->thumbnail() !!}
                                 </div>
-                            @endif
-                            
-                            {{-- Hidden file input --}}
-                            {!! Form::file('edit_variation_images_' . $row_index . '_' . $variation_row_index . '[]', [
-                                'class' => 'variation_images variation-file-input', 
-                                'accept' => 'image/*', 
-                                'multiple',
-                                'id' => 'edit_variation_img_' . $row_index . '_' . $variation_row_index,
-                                'style' => 'display: none;'
-                            ]); !!}
-                            
-                            {{-- Upload button --}}
-                            <label for="edit_variation_img_{{$row_index}}_{{$variation_row_index}}" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary variation-upload-btn" style="cursor: pointer; margin: 0;">
-                                <i class="fas fa-camera"></i>
-                                <span class="image-count-badge" style="display: none;"></span>
-                            </label>
-                            
-                            {{-- Image preview container for new uploads --}}
-                            <div class="variation-image-preview" style="display: none; margin-top: 5px;"></div>
-                        </div>
+                            @endforeach
+                            {!! Form::file('edit_variation_images_' . $row_index . '_' . $variation_row_index . '[]',
+                                 ['class' => 'variation_images', 'accept' => 'image/*', 'multiple']); !!}
+                        @else
+                            {!! Form::file('edit_variation_images_' . $row_index . '_' . $variation_row_index . '[]', 
+                                ['class' => 'variation_images', 'accept' => 'image/*', 'multiple']); !!}
+                        @endif
                     </td>
                     <td>
                         <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-error remove_variation_value_row"><i class="fa fa-trash"></i></button>

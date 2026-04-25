@@ -345,53 +345,6 @@
             </div>
         </div>
       </div>
-
-      
-      <div class="col-md-4">
-        <div class="form-group">
-            {!! Form::label('land_mark', __('business.land_mark') . ':') !!}
-            <div class="input-group">
-                <span class="input-group-addon">
-                    <i class="fa fa-map-marker"></i>
-                </span>
-                {!! Form::text('land_mark', $contact->land_mark, ['class' => 'form-control', 'placeholder' => __('business.land_mark')]); !!}
-            </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="form-group">
-            {!! Form::label('street_name', __('business.street_name') . ':') !!}
-            <div class="input-group">
-                <span class="input-group-addon">
-                    <i class="fa fa-map-marker"></i>
-                </span>
-                {!! Form::text('street_name', $contact->street_name, ['class' => 'form-control', 'placeholder' => __('business.street_name')]); !!}
-            </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="form-group">
-            {!! Form::label('building_number', __('business.building_number') . ':') !!}
-            <div class="input-group">
-                <span class="input-group-addon">
-                    <i class="fa fa-map-marker"></i>
-                </span>
-                {!! Form::text('building_number', $contact->building_number, ['class' => 'form-control', 'placeholder' => __('business.building_number')]); !!}
-            </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="form-group">
-            {!! Form::label('additional_number', __('business.additional_number_secondary') . ':') !!}
-            <div class="input-group">
-                <span class="input-group-addon">
-                    <i class="fa fa-map-marker"></i>
-                </span>
-                {!! Form::text('additional_number', $contact->additional_number, ['class' => 'form-control', 'placeholder' => __('business.additional_number')]); !!}
-            </div>
-        </div>
-      </div>
-
       <div class="clearfix"></div>
       <div class="col-md-12">
         <hr/>

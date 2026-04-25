@@ -97,5 +97,4 @@
      'tax_number2' => 'Numéro de taxe 2',
      'is_active' => 'Actif',
      'created_by' => 'Créé par',
-     'additional_number_secondary' => 'Numéro supplémentaire/Numéro secondaire',
  ];

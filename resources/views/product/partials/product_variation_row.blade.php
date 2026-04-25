@@ -83,27 +83,8 @@
 
                      {!! Form::text('product_variation[' . $row_index .'][variations][0][sell_price_inc_tax]', $default, ['class' => 'form-control input-sm variable_dsp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
                 </td>
-                <td class="variation-image-cell">
-                    <div class="variation-image-upload">
-                        {{-- Hidden file input --}}
-                        {!! Form::file('variation_images_' . $row_index .'_0[]', [
-                            'class' => 'variation_images variation-file-input', 
-                            'accept' => 'image/*', 
-                            'multiple',
-                            'id' => 'variation_img_' . $row_index . '_0',
-                            'style' => 'display: none;'
-                        ]); !!}
-                        
-                        {{-- Upload button --}}
-                        <label for="variation_img_{{$row_index}}_0" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-primary variation-upload-btn" style="cursor: pointer; margin: 0;">
-                            <i class="fas fa-camera"></i>
-                            <span class="image-count-badge" style="display: none;"></span>
-                        </label>
-                        
-                        {{-- Image preview container --}}
-                        <div class="variation-image-preview" style="display: none; margin-top: 5px;"></div>
-                    </div>
-                </td>
+                <td>{!! Form::file('variation_images_' . $row_index .'_0[]', ['class' => 'variation_images', 
+                    'accept' => 'image/*', 'multiple']); !!}</td>
                 <td>
                     <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-error remove_variation_value_row"><i class="fa fa-trash"></i></button>
                     <input type="hidden" class="variation_row_index" value="0">

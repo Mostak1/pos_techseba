@@ -19,7 +19,6 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Str; // Add this at the top with other imports
 
 class Util
 {
@@ -463,7 +462,6 @@ class Util
     {
         $sms_settings = $data['sms_settings'];
         $sms_service = isset($sms_settings['sms_service']) ? $sms_settings['sms_service'] : 'other';
-        $parameter_type = isset($sms_settings['data_parameter_type']) ? $sms_settings['data_parameter_type'] : 'form-data';
 
         if ($sms_service == 'nexmo') {
             return $this->sendSmsViaNexmo($data);
@@ -533,21 +531,7 @@ class Util
 
         if ($sms_settings['request_method'] == 'get') {
             $response = $client->get($sms_settings['url'].'?'.http_build_query($request_data), $options);
-        } else { 
-            // Check if the parameter type is set to 'json' and process accordingly
-            if($parameter_type == 'json'){
-
-                $request_data[$sms_settings['send_to_param_name']] = $data['mobile_number'];
-
-                // Split the mobile number into an array
-                if ($sms_settings['send_to_param_type'] == 'array') {
-                    $request_data[$sms_settings['send_to_param_name']] = explode(',', $data['mobile_number']);
-                }
-                // Set the request data as JSON in the options
-                $options['json'] = $request_data;
-                // Make the POST request with the JSON data
-                return $client->post($sms_settings['url'], $options);
-            }
+        } else {
             $options['form_params'] = $request_data;
 
             $response = $client->post($sms_settings['url'], $options);
@@ -717,30 +701,22 @@ class Util
         $uploaded_file_name = null;
         if ($request->hasFile($file_name) && $request->file($file_name)->isValid()) {
 
-            $file = $request->file($file_name);
-
-            // Laravel inbuilt server-side file type validation
+            //Check if mime type is image
             if ($file_type == 'image') {
-                if (!$file->isValid() || !Str::startsWith($file->getMimeType(), 'image/')) {
+                if (strpos($request->$file_name->getClientMimeType(), 'image/') === false) {
                     throw new \Exception('Invalid image file');
                 }
             }
 
             if ($file_type == 'document') {
-                $allowed_mimes = array_keys(config('constants.document_upload_mimes_types'));
-                if (!in_array($file->getMimeType(), $allowed_mimes)) {
+                if (! in_array($request->$file_name->getClientMimeType(), array_keys(config('constants.document_upload_mimes_types')))) {
                     throw new \Exception('Invalid document file');
                 }
             }
 
-            if ($file->getSize() <= config('constants.document_size_limit')) {
-                // Sanitize file name: slugify original name (without extension), prepend time, append extension
-                $original_name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $extension = $file->getClientOriginalExtension();
-                $sanitized_name = Str::slug($original_name);
-                $new_file_name = time() . '_' . $sanitized_name . ($extension ? '.' . $extension : '');
-
-                if ($file->storeAs($dir_name, $new_file_name)) {
+            if ($request->$file_name->getSize() <= config('constants.document_size_limit')) {
+                $new_file_name = time().'_'.$request->$file_name->getClientOriginalName();
+                if ($request->$file_name->storeAs($dir_name, $new_file_name)) {
                     $uploaded_file_name = $new_file_name;
                 }
             }
@@ -1284,7 +1260,6 @@ class Util
                 DB::raw("SUM(IF(t.type = 'purchase', final_total, 0)) as total_purchase"),
                 DB::raw("SUM(IF(t.status = 'final' AND t.type = 'sell', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as total_paid"),
                 DB::raw("SUM(IF(t.type = 'purchase', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as purchase_paid"),
-                DB::raw("SUM(IF(t.type = 'sell_return', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as sell_return_paid"),
                 DB::raw("SUM(IF(t.type = 'opening_balance', final_total, 0)) as opening_balance"),
                 DB::raw("SUM(IF(t.type = 'sell_return', final_total, 0)) as total_sell_return"),
                 DB::raw("SUM(IF(t.type = 'opening_balance', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as opening_balance_paid")
@@ -1295,9 +1270,7 @@ class Util
 
         $contact_payments = $query->first();
 
-        // + $contact_payments->sell_return_paid add this in due because after paymnet for sell return not calculated 
-
-        $due = $contact_payments->total_invoice + $contact_payments->total_purchase - $contact_payments->total_paid - $contact_payments->purchase_paid + $contact_payments->opening_balance - $contact_payments->opening_balance_paid - $contact_payments->total_sell_return + $contact_payments->sell_return_paid;
+        $due = $contact_payments->total_invoice + $contact_payments->total_purchase - $contact_payments->total_paid - $contact_payments->purchase_paid + $contact_payments->opening_balance - $contact_payments->opening_balance_paid - $contact_payments->total_sell_return;
 
         return $due;
     }
@@ -1852,35 +1825,6 @@ class Util
         }
 
         return ['start' => $start, 'end' => $end];
-    }
-
-
-    function numberToCurrencyWords($amount, $currencyMain = 'dollar', $currencySub = 'cent', $locale = 'en') {
-        $formatter = new \NumberFormatter($locale, \NumberFormatter::SPELLOUT);
-    
-        $mainUnit = floor($amount);
-        $subUnit = round(($amount - $mainUnit) * 100);
-    
-        $mainWord = $formatter->format($mainUnit);
-        $subWord = $formatter->format($subUnit);
-    
-       // Determine if we should add 's' for plurals based on locale
-        $disablePluralS = in_array($locale, ['hi', 'hi_IN', 'ar', 'ar_SA', 'ar_EG']);
-
-        if ($disablePluralS) {
-            $mainLabel = $currencyMain;
-            $subLabel = $currencySub;
-        } else {
-            $mainLabel = ($mainUnit == 1) ? $currencyMain : $currencyMain . 's';
-            $subLabel = ($subUnit == 1) ? $currencySub : $currencySub . 's';
-        }
-        $result = ucfirst($mainWord) . " " . $mainLabel;
-    
-        if ($subUnit > 0) {
-            $result .= " " . $subWord . " " . $subLabel;
-        }
-    
-        return $result;
     }
 
 }

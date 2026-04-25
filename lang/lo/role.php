@@ -40,28 +40,9 @@ return [
     'product.delete' => 'ລຶບສິນຄ້າ',
 
     'purchase.view' => 'ເບິ່ງການຊື້  & ການປັບສະຕັອກ',
-    'purchase.view_own' => 'ເບິ່ງການຊື້ຂອງຕົນເອງ',
-    'purchase.view_all' => 'ເບິ່ງການຊື້ທັງໝົດ',
     'purchase.create' => 'ເພີ່ມການຊື້ & ການປັບສະຕັອກ',
     'purchase.update' => 'ແກ້ໄຂການຊື້ & ການປັບສະຕັອກ',
     'purchase.delete' => 'ລຶບການຊື້ purchase & ການປັບສະຕັອກ',
-    
-    'stock_adjustment.view' => 'ເບິ່ງການປັບສະຕັອກ',
-    'stock_adjustment.view_own' => 'ເບິ່ງການປັບສະຕັອກຂອງຕົນເອງ',
-    'stock_adjustment.create' => 'ເພີ່ມການປັບສະຕັອກ',
-    'stock_adjustment.update' => 'ແກ້ໄຂການປັບສະຕັອກ',
-    'stock_adjustment.delete' => 'ລຶບການປັບສະຕັອກ',
-    'purchase' => 'ການຊື້',
-    'stock_adjustment' => 'ການປັບສະຕັອກ',
-
-    'stock_transfer' => 'ການໂອນສະຕັອກ',
-    'stock_transfer.view' => 'ເບິ່ງການໂອນສະຕັອກທັງໝົດ',
-    'stock_transfer.view_own' => 'ເບິ່ງການໂອນສະຕັອກຂອງຕົນເອງ',
-    'stock_transfer.create' => 'ເພີ່ມການໂອນສະຕັອກ',
-    'stock_transfer.update' => 'ແກ້ໄຂການໂອນສະຕັອກ',
-    'stock_transfer.delete' => 'ລຶບການໂອນສະຕັອກ',
-
-
 
     'sell.view' => 'ເບິ່ງ POS ຂາຍ',
     'sell.create' => 'ເພີ່ມ POS ຂາຍ',

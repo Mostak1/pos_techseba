@@ -257,7 +257,7 @@ class ProductController extends Controller
                     }
                 )
                 ->editColumn('product', function ($row) use ($is_woocommerce) {
-                    $product = $row->is_inactive == 1 ? e($row->product).' <span class="label bg-gray">'.__('lang_v1.inactive').'</span>' : e($row->product);
+                    $product = $row->is_inactive == 1 ? $row->product.' <span class="label bg-gray">'.__('lang_v1.inactive').'</span>' : $row->product;
 
                     $product = $row->not_for_selling == 1 ? $product.' <span class="label bg-gray">'.__('lang_v1.not_for_selling').
                         '</span>' : $product;
@@ -279,7 +279,7 @@ class ProductController extends Controller
                     if ($row->enable_stock) {
                         $stock = $this->productUtil->num_f($row->current_stock, false, null, true);
 
-                        return '<span data-is_quantity="true" class="current_stock" data-orig-value="'.$stock.'" data-unit="'.$row->unit.'" >'.$stock.'</span> '.$row->unit;
+                        return $stock.' '.$row->unit;
                     } else {
                         return '--';
                     }
@@ -1011,10 +1011,6 @@ class ProductController extends Controller
                         //Delete variation location details
                         VariationLocationDetails::where('product_id', $id)
                                                 ->delete();
-                        //Detach product locations pivot
-                        $product->product_locations()->detach();
-                        //Delete rack details
-                        \App\ProductRack::where('product_id', $id)->delete();
                         $product->delete();
                         event(new ProductsCreatedOrModified($product, 'deleted'));
                         DB::commit();
@@ -1262,64 +1258,8 @@ class ProductController extends Controller
 
             $result = $this->productUtil->filterProduct($business_id, $search_term, $location_id, $not_for_selling, $price_group_id, $product_types, $search_fields, $check_qty);
 
-            // If only one result and location_id is provided (POS context), auto-fetch the product row
-            if (count($result) == 1 && !empty($location_id) && request()->get('auto_add_single', false)) {
-                
-                $variation_id = $result[0]->variation_id;
-                        
-                $row_data = $this->productUtil->getPosProductRow($variation_id, $location_id);
-                
-                // Add variation_id to row_data for duplicate checking
-                $row_data['variation_id'] = $variation_id;
-                
-                return json_encode([
-                    'auto_add' => true,
-                    'row_data' => $row_data
-                ]);
-            }
-
             return json_encode($result);
         }
-    }
-    /**
-     * Get multiple variation details in a single request
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getVariationDetailsBulk(Request $request)
-    {
-        if (!request()->ajax()) {
-            abort(404);
-        }
-
-        $business_id = $request->session()->get('user.business_id');
-        $location_id = $request->input('location_id');
-        $ids_param = $request->input('ids', '');
-
-        if (empty($location_id) || empty($ids_param)) {
-            return response()->json([]);
-        }
-
-        // Support both comma separated string or array
-        $variation_ids = is_array($ids_param)
-            ? $ids_param
-            : array_filter(array_map('trim', explode(',', (string) $ids_param)), function ($v) {
-                return $v !== '';
-            });
-
-        $details = [];
-        foreach ($variation_ids as $vid) {
-            try {
-                $product = $this->productUtil->getDetailsFromVariation($vid, $business_id, $location_id, null);
-                $details[$vid] = $product;
-            } catch (\Exception $e) {
-                \Log::warning('Bulk variation detail fetch failed for id: '.$vid.' msg: '.$e->getMessage());
-                $details[$vid] = null;
-            }
-        }
-
-        return response()->json($details);
     }
 
     /**
@@ -1409,37 +1349,6 @@ class ProductController extends Controller
             }
             $count = $query2->count();
         }
-        if ($count == 0) {
-            echo 'true';
-            exit;
-        } else {
-            echo 'false';
-            exit;
-        }
-    }
-
-     /**
-     * Checks if product name already exists.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function checkProductName(Request $request)
-    {
-        $business_id = $request->session()->get('user.business_id');
-        $name = $request->input('name');
-        $product_id = $request->input('product_id');
-
-        //check in products table
-        $query = Product::where('business_id', $business_id)
-                        ->where('name', $name);
-        if (! empty($product_id)) {
-            $query->where('id', '!=', $product_id);
-        }
-        $count = $query->count();
-
-        //check in variation table if $count = 0
-        
         if ($count == 0) {
             echo 'true';
             exit;
@@ -1546,16 +1455,8 @@ class ProductController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $business_id = $request->session()->get('user.business_id');
-
-        // check for products quota
-        if(! $this->moduleUtil->isQuotaAvailable('products', $business_id)) {
-            return $output = ['success' => 0,
-                'msg' => __('superadmin::lang.max_products'),
-            ];
-        }
-
         try {
+            $business_id = $request->session()->get('user.business_id');
             $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'tax_type', 'sku',
                 'alert_quantity', 'type', 'sub_unit_ids', 'sub_category_id', 'weight', 'product_description', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_custom_field5', 'product_custom_field6', 'product_custom_field7', 'product_custom_field8', 'product_custom_field9', 'product_custom_field10', 'product_custom_field11', 'product_custom_field12', 'product_custom_field13', 'product_custom_field14', 'product_custom_field15', 'product_custom_field16', 'product_custom_field17', 'product_custom_field18', 'product_custom_field19', 'product_custom_field20'];
 
@@ -1756,10 +1657,6 @@ class ProductController extends Controller
                         //Delete variation location details
                         VariationLocationDetails::where('product_id', $product->id)
                                                     ->delete();
-                        //Detach product locations pivot
-                        $product->product_locations()->detach();
-                        //Delete rack details
-                        \App\ProductRack::where('product_id', $product->id)->delete();
                         $product->delete();
                         event(new ProductsCreatedOrModified($product, 'Deleted'));
                     } else {

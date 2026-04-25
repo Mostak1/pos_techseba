@@ -97,5 +97,4 @@
      'tax_number2' => '税号2',
      'is_active' => '活性',
      'created_by' => '由...制作',
-     'additional_number_secondary' => 'Zusätzliche Nummer/Sekundäre Nummer',
  ];

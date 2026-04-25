@@ -27,7 +27,6 @@
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('contact.contact')</a>
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('business.sale')</a>
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('sale.pos_sale')</a>
-                    <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('lang_v1.display_screen')</a>
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('purchase.purchases')</a>
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('lang_v1.payment')</a>
                     <a href="#" class="list-group-item text-center tw-font-bold tw-text-sm md:tw-text-base">@lang('business.dashboard')</a>
@@ -55,7 +54,6 @@
                 <!-- tab 4 start -->
                 @include('business.partials.settings_sales')
                 @include('business.partials.settings_pos')
-                @include('business.partials.settings_display_pos')
                 <!-- tab 4 end -->
                 <!-- tab 5 start -->
                 @include('business.partials.settings_purchase')
@@ -183,15 +181,7 @@
                 param_val_8: $('#sms_settings_param_val8').val(),
                 param_val_9: $('#sms_settings_param_val9').val(),
                 param_val_10: $('#sms_settings_param_val10').val(),
-                test_number: test_number,
-
-                header_1: $('#sms_settings_header_key1').val(),
-                header_val_1: $('#sms_settings_header_val1').val(),
-                header_2: $('#sms_settings_header_key2').val(),
-                header_val_2: $('#sms_settings_header_val2').val(),
-                header_3: $('#sms_settings_header_key3').val(),
-                header_val_3: $('#sms_settings_header_val3').val(),
-                data_parameter_type: $('#data_parameter_type').val(),
+                test_number: test_number
             };
 
             $.ajax({
@@ -225,18 +215,6 @@
                 textarea.addClass('hide');
             }
         })
-
-        tinymce.init({
-            selector: 'textarea#display_screen_heading',
-            height: 250
-        });
-
-        $('.carousel_image').fileinput({
-            showUpload: true,
-            showPreview: true,
-            browseLabel: LANG.file_browse_label,
-            removeLabel: LANG.remove,
-        });
     });
 </script>
 @endsection

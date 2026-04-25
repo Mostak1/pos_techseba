@@ -250,9 +250,9 @@ class ContactController extends Controller
             ')
             ->editColumn('name', function ($row) {
                 if ($row->contact_status == 'inactive') {
-                    return e($row->name).' <small class="label pull-right bg-red no-print">'.__('lang_v1.inactive').'</small>';
+                    return $row->name.' <small class="label pull-right bg-red no-print">'.__('lang_v1.inactive').'</small>';
                 } else {
-                    return e($row->name);
+                    return $row->name;
                 }
             })
             ->editColumn('created_at', '{{@format_date($created_at)}}')
@@ -296,7 +296,7 @@ class ContactController extends Controller
         $query = $this->contactUtil->getContactQuery($business_id, 'customer');
 
         if (request()->has('has_sell_due')) {
-            $query->havingRaw('(COALESCE(total_invoice, 0) - COALESCE(invoice_received, 0) - COALESCE(total_ledger_discount, 0) - COALESCE(total_sell_return, 0) + COALESCE(sell_return_paid, 0)) > 0');
+            $query->havingRaw('(total_invoice - invoice_received) > 0');
         }
 
         if (request()->has('has_sell_return')) {
@@ -363,10 +363,9 @@ class ContactController extends Controller
 
         $contacts = Datatables::of($query)
             ->addColumn('address', '{{implode(", ", array_filter([$address_line_1, $address_line_2, $city, $state, $country, $zip_code]))}}')
-        //    + $sell_return_paid add this in due because after paymnet for sell return not calculated 
             ->addColumn(
                 'due',
-                '<span class="contact_due" data-orig-value="{{$total_invoice - $invoice_received - $total_ledger_discount - $total_sell_return  + $sell_return_paid}}" data-highlight=true>@format_currency($total_invoice - $invoice_received - $total_ledger_discount -  $total_sell_return + $sell_return_paid)  </span>'
+                '<span class="contact_due" data-orig-value="{{$total_invoice - $invoice_received - $total_ledger_discount - $total_sell_return}}" data-highlight=true>@format_currency($total_invoice - $invoice_received - $total_ledger_discount -  $total_sell_return)</span>'
             )
             ->addColumn(
                 'return_due',
@@ -485,9 +484,9 @@ class ContactController extends Controller
                 @endif
             ')
             ->editColumn('name', function ($row) {
-                $name = e($row->name);
+                $name = $row->name;
                 if ($row->contact_status == 'inactive') {
-                    $name = e($row->name).' <small class="label pull-right bg-red no-print">'.__('lang_v1.inactive').'</small>';
+                    $name = $row->name.' <small class="label pull-right bg-red no-print">'.__('lang_v1.inactive').'</small>';
                 }
 
                 if (! empty($row->converted_by)) {
@@ -590,7 +589,7 @@ class ContactController extends Controller
             }
 
             $input = $request->only(['type', 'supplier_business_name',
-                'prefix', 'first_name', 'middle_name', 'last_name', 'tax_number', 'pay_term_number', 'pay_term_type', 'mobile', 'landline', 'alternate_number', 'city', 'state', 'country', 'address_line_1', 'address_line_2', 'customer_group_id', 'zip_code', 'contact_id', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'custom_field5', 'custom_field6', 'custom_field7', 'custom_field8', 'custom_field9', 'custom_field10', 'email', 'shipping_address', 'position', 'dob', 'shipping_custom_field_details', 'assigned_to_users', 'land_mark', 'street_name', 'building_number', 'additional_number']);
+                'prefix', 'first_name', 'middle_name', 'last_name', 'tax_number', 'pay_term_number', 'pay_term_type', 'mobile', 'landline', 'alternate_number', 'city', 'state', 'country', 'address_line_1', 'address_line_2', 'customer_group_id', 'zip_code', 'contact_id', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'custom_field5', 'custom_field6', 'custom_field7', 'custom_field8', 'custom_field9', 'custom_field10', 'email', 'shipping_address', 'position', 'dob', 'shipping_custom_field_details', 'assigned_to_users', ]);
 
             $name_array = [];
 
@@ -780,7 +779,7 @@ class ContactController extends Controller
         if (request()->ajax()) {
             try {
                 $input = $request->only(['type', 'supplier_business_name', 'prefix', 'first_name', 'middle_name', 'last_name', 'tax_number', 'pay_term_number', 'pay_term_type', 'mobile', 'address_line_1', 'address_line_2', 'zip_code', 'dob', 'alternate_number', 'city', 'state', 'country', 'landline', 'customer_group_id', 'contact_id', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'custom_field5', 'custom_field6', 'custom_field7', 'custom_field8', 'custom_field9', 'custom_field10', 'email', 'shipping_address', 'position', 'shipping_custom_field_details', 'export_custom_field_1', 'export_custom_field_2', 'export_custom_field_3', 'export_custom_field_4', 'export_custom_field_5',
-                    'export_custom_field_6', 'assigned_to_users', 'land_mark', 'street_name', 'building_number', 'additional_number']);
+                    'export_custom_field_6', 'assigned_to_users', ]);
 
                 $name_array = [];
 
@@ -1305,7 +1304,7 @@ class ContactController extends Controller
             }
         }
 
-        $line_details = ($format == 'format_3' || $format == 'format_4') ? true : false;
+        $line_details = $format == 'format_3' ? true : false;
 
         $ledger_details = $this->transactionUtil->getLedgerDetails($contact_id, $start_date, $end_date, $format, $location_id, $line_details);
 
@@ -1322,20 +1321,14 @@ class ContactController extends Controller
             } elseif ($format == 'format_3') {
                 $html = view('contact.ledger_format_3')
                     ->with(compact('ledger_details', 'contact', 'location', 'is_admin', 'for_pdf'))->render();
-            } elseif ($format == 'format_4') {
-                $html = view('contact.ledger_format_4')
-                    ->with(compact('ledger_details', 'contact', 'location', 'is_admin', 'for_pdf'))->render();
             } else {
                 $html = view('contact.ledger')
                     ->with(compact('ledger_details', 'contact', 'for_pdf', 'location'))->render();
             }
 
-            // Use landscape orientation only for format_4
-            $orientation = ($format == 'format_4') ? 'L' : 'P';
-            $mpdf = $this->getMpdf($orientation);
+            $mpdf = $this->getMpdf();
             $mpdf->WriteHTML($html);
             $mpdf->Output($output_file_name, 'I');
-            exit;
         }
 
         if ($format == 'format_2') {
@@ -1343,9 +1336,6 @@ class ContactController extends Controller
              ->with(compact('ledger_details', 'contact', 'location'));
         } elseif ($format == 'format_3') {
             return view('contact.ledger_format_3')
-             ->with(compact('ledger_details', 'contact', 'location', 'is_admin'));
-        } elseif ($format == 'format_4') {
-            return view('contact.ledger_format_4')
              ->with(compact('ledger_details', 'contact', 'location', 'is_admin'));
         } else {
             return view('contact.ledger')
@@ -1438,9 +1428,7 @@ class ContactController extends Controller
                         ->with(compact('ledger_details', 'contact', 'for_pdf'))->render();
             }
 
-            // Use landscape orientation only for format_4
-            $orientation = ($data['ledger_format'] == 'format_4') ? 'L' : 'P';
-            $mpdf = $this->getMpdf($orientation);
+            $mpdf = $this->getMpdf();
             $mpdf->WriteHTML($html);
 
             $path = config('constants.mpdf_temp_path');
@@ -1685,33 +1673,6 @@ class ContactController extends Controller
         return [
             'is_mobile_exists' => ! empty($contacts),
             'msg' => __('lang_v1.mobile_already_registered', ['contacts' => implode(', ', $contacts), 'mobile' => $mobile_number]),
-        ];
-    }
-
-     /**
-     * Check if Tax Number already exists
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function checkTaxNumber(Request $request)
-    {
-        $business_id = $request->session()->get('user.business_id');
-        $tax_number = $request->input('tax_number');
-
-
-        $query = Contact::where('business_id', $business_id)
-                        ->where('tax_number', $tax_number);
-
-        if (! empty($request->input('contact_id'))) {
-            $query->where('id', '!=', $request->input('contact_id'));
-        }
-
-        $contacts = $query->pluck('name')->toArray();
-
-        return [
-            'is_tax_number_exists' => ! empty($contacts),
-            'msg' => ! empty($contacts) ? __('lang_v1.tax_number_already_registered', ['contacts' => implode(', ', $contacts), 'tax_number' => $tax_number]) : '',
         ];
     }
 }

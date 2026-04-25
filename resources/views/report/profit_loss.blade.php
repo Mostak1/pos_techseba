@@ -16,7 +16,7 @@
         </div>
 
         <div class="row no-print">
-            <div class="col-md-4 col-xs-12">
+            <div class="col-md-3 col-md-offset-7 col-xs-6">
                 <div class="input-group">
                     <span class="input-group-addon bg-light-blue"><i class="fa fa-map-marker"></i></span>
                     <select class="form-control select2" id="profit_loss_location_filter">
@@ -26,9 +26,8 @@
                     </select>
                 </div>
             </div>
-        
-            <div class="col-md-4 col-xs-12">
-                <div class="form-group">
+            <div class="col-md-2 col-xs-6">
+                <div class="form-group pull-right">
                     <div class="input-group">
                         <button type="button" class="tw-dw-btn tw-dw-btn-primary tw-text-white tw-dw-btn-sm" id="profit_loss_date_filter">
                             <span>
@@ -39,9 +38,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 col-xs-12">
-                <div id="ai-analysis-container" class="ai-analysis-content"></div>
-            </div>
         </div>
         <div class="row">
             <div id="pl_data_div">
@@ -51,6 +47,10 @@
 
         <div class="row no-print">
             <div class="col-sm-12 tw-mb-2">
+                {{-- <button type="button" class="btn btn-primary pull-right" 
+            aria-label="Print" onclick="window.print();"
+            ><i class="fa fa-print"></i> @lang( 'messages.print' )</button> --}}
+
                 <button class="tw-dw-btn tw-dw-btn-primary tw-text-white pull-right" aria-label="Print"
                     onclick="window.print();">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -526,7 +526,6 @@
                 } else if (target == '#profit_by_products') {
                     profit_by_products_table.ajax.reload();
                 }
-                $("a.btn").removeClass("btn btn-default buttons-excel buttons-html5");
             });
         });
     </script>

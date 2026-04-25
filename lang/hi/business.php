@@ -97,5 +97,4 @@
      'tax_number2' => 'टैक्स नंबर 2',
      'is_active' => 'सक्रिय',
      'created_by' => 'के द्वारा बनाई गई',
-     'additional_number_secondary' => 'अतिरिक्त नंबर/द्वितीयक नंबर',
  ];

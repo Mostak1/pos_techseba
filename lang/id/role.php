@@ -40,26 +40,9 @@ return [
     'product.delete' => 'Hapus produk',
 
     'purchase.view' => 'Liha pembelian & Penyesuaian Stok',
-    'purchase.view_own' => 'Lihat Pembelian Sendiri',
-    'purchase.view_all' => 'Lihat Semua Pembelian',
     'purchase.create' => 'Tambah pembelian & Penyesuaian Stok',
     'purchase.update' => 'Edit pembelian & Penyesuaian Stok',
     'purchase.delete' => 'Hapus pembelian & Penyesuaian Stok',
-    
-    'stock_adjustment.view' => 'Lihat penyesuaian stok',
-    'stock_adjustment.view_own' => 'Lihat penyesuaian stok sendiri',
-    'stock_adjustment.create' => 'Tambah penyesuaian stok',
-    'stock_adjustment.update' => 'Edit penyesuaian stok',
-    'stock_adjustment.delete' => 'Hapus penyesuaian stok',
-    'purchase' => 'Pembelian',
-    'stock_adjustment' => 'Penyesuaian Stok',
-
-    'stock_transfer' => 'Transfer stok',
-    'stock_transfer.view' => 'Lihat semua transfer stok',
-    'stock_transfer.view_own' => 'Lihat transfer stok sendiri',
-    'stock_transfer.create' => 'Tambah transfer stok',
-    'stock_transfer.update' => 'Edit transfer stok',
-    'stock_transfer.delete' => 'Hapus transfer stok',
 
     'sell.view' => 'Lihat penjualan POS',
     'sell.create' => 'Tambah penjualan POS',

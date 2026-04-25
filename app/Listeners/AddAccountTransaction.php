@@ -64,12 +64,6 @@ class AddAccountTransaction
                 $account_transaction_data['type'] = 'debit';
             }
 
-            if ($event->formInput['transaction_type'] == 'gym_subscription' && isset($event->formInput['is_return']) && $event->formInput['is_return'] == 1) {
-                $account_transaction_data['type'] = 'debit';
-            }
-
-            
-
             AccountTransaction::createAccountTransaction($account_transaction_data);
         }
     }

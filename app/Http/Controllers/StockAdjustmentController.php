@@ -46,7 +46,7 @@ class StockAdjustmentController extends Controller
     public function index()
     {
 
-        if (! auth()->user()->can('stock_adjustment.view') && ! auth()->user()->can('stock_adjustment.create') && ! auth()->user()->can('view_own_stock_adjustment')) {
+        if (! auth()->user()->can('purchase.view') && ! auth()->user()->can('purchase.create') && ! auth()->user()->can('view_own_purchase')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -92,11 +92,11 @@ class StockAdjustmentController extends Controller
                 $stock_adjustments->where('transactions.location_id', $location_id);
             }
 
-            if (! auth()->user()->can('stock_adjustment.view') && auth()->user()->can('view_own_stock_adjustment')) {
+            if (! auth()->user()->can('purchase.view') && auth()->user()->can('view_own_purchase')) {
                 $stock_adjustments->where('transactions.created_by', request()->session()->get('user.id'));
             }
 
-            if(! auth()->user()->can('stock_adjustment.delete')){
+            if(! auth()->user()->can('purchase.delete')){
                 $hide = 'hide';
             }
 
@@ -149,7 +149,7 @@ class StockAdjustmentController extends Controller
      */
     public function create()
     {
-        if (! auth()->user()->can('stock_adjustment.create')) {
+        if (! auth()->user()->can('purchase.create')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -174,7 +174,7 @@ class StockAdjustmentController extends Controller
      */
     public function store(Request $request)
     {
-        if (! auth()->user()->can('stock_adjustment.create')) {
+        if (! auth()->user()->can('purchase.create')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -277,7 +277,7 @@ class StockAdjustmentController extends Controller
      */
     public function show($id)
     {
-        if (! auth()->user()->can('stock_adjustment.view')) {
+        if (! auth()->user()->can('purchase.view')) {
             abort(403, 'Unauthorized action.');
         }
         $business_id = request()->session()->get('user.business_id');
@@ -332,7 +332,7 @@ class StockAdjustmentController extends Controller
      */
     public function destroy($id)
     {
-        if (! auth()->user()->can('stock_adjustment.delete')) {
+        if (! auth()->user()->can('purchase.delete')) {
             abort(403, 'Unauthorized action.');
         }
         try {
@@ -433,7 +433,7 @@ class StockAdjustmentController extends Controller
      */
     public function removeExpiredStock($purchase_line_id)
     {
-        if (! auth()->user()->can('stock_adjustment.delete')) {
+        if (! auth()->user()->can('purchase.delete')) {
             abort(403, 'Unauthorized action.');
         }
 

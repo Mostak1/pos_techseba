@@ -374,7 +374,7 @@ class ReportController extends Controller
                     if ($row->enable_stock) {
                         $stock = $row->stock ? $row->stock : 0;
 
-                        return  '<span class="current_stock" data-is_quantity="true" data-orig-value="'.(float) $stock.'" data-unit="'.$row->unit.'"> '.$this->transactionUtil->num_f($stock, false, null, true).'</span>'.' '.$row->unit;
+                        return  '<span class="current_stock" data-orig-value="'.(float) $stock.'" data-unit="'.$row->unit.'"> '.$this->transactionUtil->num_f($stock, false, null, true).'</span>'.' '.$row->unit;
                     } else {
                         return '--';
                     }
@@ -411,7 +411,7 @@ class ReportController extends Controller
                         $total_transfered = (float) $row->total_transfered;
                     }
 
-                    return '<span class="total_transfered" data-is_quantity="true" data-orig-value="'.$total_transfered.'" data-unit="'.$row->unit.'" >'.$this->transactionUtil->num_f($total_transfered, false, null, true).'</span> '.$row->unit;
+                    return '<span class="total_transfered" data-orig-value="'.$total_transfered.'" data-unit="'.$row->unit.'" >'.$this->transactionUtil->num_f($total_transfered, false, null, true).'</span> '.$row->unit;
                 })
 
                 ->editColumn('total_adjusted', function ($row) {
@@ -420,7 +420,7 @@ class ReportController extends Controller
                         $total_adjusted = (float) $row->total_adjusted;
                     }
 
-                    return '<span data-is_quantity="true" class="total_adjusted" data-orig-value="'.$total_adjusted.'" data-unit="'.$row->unit.'" >'.$this->transactionUtil->num_f($total_adjusted, false, null, true).'</span> '.$row->unit;
+                    return '<span class="total_adjusted" data-orig-value="'.$total_adjusted.'" data-unit="'.$row->unit.'" >'.$this->transactionUtil->num_f($total_adjusted, false, null, true).'</span> '.$row->unit;
                 })
                 ->editColumn('unit_price', function ($row) use ($allowed_selling_price_group) {
                     $html = '';
@@ -810,13 +810,7 @@ class ReportController extends Controller
                     if ($type == 'sell') {
                         foreach ($row->sell_lines as $sell_line) {
                             if ($sell_line->tax_id == $tax['id']) {
-
-                                // $tax_amount += ($sell_line->item_tax * ($sell_line->quantity - 
-                                // $sell_line->quantity_returned));
-
-                                $tax_for_one = $sell_line->quantity > 0 ? $sell_line->line_total_tax / $sell_line->quantity : 0;
-                                $tax_amount += ($tax_for_one * ($sell_line->quantity - $sell_line->quantity_returned));
-                                
+                                $tax_amount += ($sell_line->item_tax * ($sell_line->quantity - $sell_line->quantity_returned));
                             }
 
                             //break group tax
@@ -1202,9 +1196,8 @@ class ReportController extends Controller
 
                     return '<span data-orig-value="'.$total.'" >'.$this->transactionUtil->num_f($total, true).'</span>';
                 })
-
-                ->addColumn('action', '@if(auth()->user()->can("view_cash_register"))<button type="button" data-href="{{action(\'App\Http\Controllers\CashRegisterController@show\', [$id])}}" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-info tw-w-max btn-modal" 
-                    data-container=".view_register"><i class="fas fa-eye" aria-hidden="true"></i> @lang("messages.view")</button>@endif @if($status != "close" && auth()->user()->can("close_cash_register"))<button type="button" data-href="{{action(\'App\Http\Controllers\CashRegisterController@getCloseRegister\', [$id])}}" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-xs tw-dw-btn-error tw-w-max btn-modal" 
+                ->addColumn('action', '<button type="button" data-href="{{action(\'App\Http\Controllers\CashRegisterController@show\', [$id])}}" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-info tw-w-max btn-modal" 
+                    data-container=".view_register"><i class="fas fa-eye" aria-hidden="true"></i> @lang("messages.view")</button> @if($status != "close" && auth()->user()->can("close_cash_register"))<button type="button" data-href="{{action(\'App\Http\Controllers\CashRegisterController@getCloseRegister\', [$id])}}" class="tw-dw-btn tw-dw-btn-outline tw-dw-btn-xs tw-dw-btn-error tw-w-max btn-modal" 
                         data-container=".view_register"><i class="fas fa-window-close"></i> @lang("messages.close")</button> @endif')
                 ->filterColumn('user_name', function ($query, $keyword) {
                     $query->whereRaw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, ''), '<br>', COALESCE(u.email, '')) like ?", ["%{$keyword}%"]);
@@ -1880,8 +1873,6 @@ class ReportController extends Controller
                     'v.name as variation_name',
                     'v.sub_sku',
                     'c.name as customer',
-                    'c.mobile as contact_no',
-                    'c.email as contact_email',
                     'c.supplier_business_name',
                     'c.contact_id',
                     't.id as transaction_id',
@@ -2079,8 +2070,6 @@ class ReportController extends Controller
                     'v.name as variation_name',
                     'v.sub_sku',
                     'c.name as customer',
-                    'c.mobile as contact_no',
-                    'c.email as contact_email',
                     'c.supplier_business_name',
                     't.id as transaction_id',
                     't.invoice_no',

@@ -87,7 +87,6 @@ return [
     'unique' => ':attribute is al in gebruik.',
     'uploaded' => 'Het uploaden van :attribute is mislukt.',
     'url' => ':attribute is geen geldige URL.',
-    'indisposable' => 'Deze e-mail is niet toegestaan.',
 
     /*
     |--------------------------------------------------------------------------

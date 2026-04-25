@@ -40,26 +40,9 @@ return [
     'product.delete' => 'محصول پاک کړئ',
 
     'purchase.view' => 'د خریدارۍ او د سټاک تعدیلات وګورئ',
-    'purchase.view_own' => 'د خپل پیرود لیدل',
-    'purchase.view_all' => 'د ټولو پیرود لیدل',
     'purchase.create' => 'د خریدارۍ او د سټاک بدلول اضافه کړئ',
     'purchase.update' => 'د خریدارۍ او د سټاک بدلول سم کړئ',
     'purchase.delete' => 'د خریدارۍ او د سټاک بدلول پاک کړئ',
-    
-    'stock_adjustment.view' => 'د سټاک تعدیل وګورئ',
-    'stock_adjustment.view_own' => 'د خپل سټاک تعدیل وګورئ',
-    'stock_adjustment.create' => 'د سټاک تعدیل اضافه کړئ',
-    'stock_adjustment.update' => 'د سټاک تعدیل ایډیټ کړئ',
-    'stock_adjustment.delete' => 'د سټاک تعدیل پاک کړئ',
-    'purchase' => 'پیرودل',
-    'stock_adjustment' => 'د سټاک تعدیل',
-
-    'stock_transfer' => 'سټاک لېږد',
-    'stock_transfer.view' => 'ټول سټاک لېږدونه وګورئ',
-    'stock_transfer.view_own' => 'خپل سټاک لېږدونه وګورئ',
-    'stock_transfer.create' => 'سټاک لېږد اضافه کړئ',
-    'stock_transfer.update' => 'سټاک لېږد سم کړئ',
-    'stock_transfer.delete' => 'سټاک لېږد پاک کړئ',
 
     'sell.view' => 'د POS خرڅلاو وګورئ',
     'sell.create' => 'د POS خرڅلاو زیات کړئ',

@@ -18,8 +18,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
-use App\Rules\ReCaptcha;
-use Illuminate\Support\Facades\Validator;
 
 class BusinessController extends Controller
 {
@@ -166,16 +164,6 @@ class BusinessController extends Controller
                     'accounting_method.required' => __('validation.required', ['attribute' => __('business.accounting_method')]),
                 ]
             );
-
-            if (config('constants.enable_recaptcha')) {
-                $recaptcha_validator = Validator::make($request->all(), [
-                    'g-recaptcha-response' => ['required', new \App\Rules\ReCaptcha]
-                ]);
-                if ($recaptcha_validator->fails()) {
-                    return back()->withErrors($recaptcha_validator)->withInput();
-                }
-            }
-
 
             DB::beginTransaction();
 
@@ -449,28 +437,14 @@ class BusinessController extends Controller
             $shortcuts = $request->input('shortcuts');
             $business_details['keyboard_shortcuts'] = json_encode($shortcuts);
 
-           // Get existing pos_settings
-            $pos_settings = $request->input('pos_settings', []);
-
-            $pre_busines_detail = $this->businessUtil->getDetails($business_id);
-            $pre_pos_setting = json_decode($pre_busines_detail->pos_settings, true) ?? [];
-            for ($i = 1; $i <= 10; $i++) {
-                $inputName = "carousel_image_$i"; // Image field names should be like carousel_image_1, carousel_image_2, etc.
-
-                if ($request->hasFile($inputName)) {
-                    $image_name = $this->businessUtil->uploadFile($request, $inputName, 'carousel_images', 'image');
-                    $pos_settings[$inputName] = $image_name; // Store image URL inside pos_settings
-                }else if (isset($pre_pos_setting[$inputName])){
-                    $pos_settings[$inputName] = $pre_pos_setting[$inputName] ?? null;
-                }
-            }
+            //pos_settings
+            $pos_settings = $request->input('pos_settings');
             $default_pos_settings = $this->businessUtil->defaultPosSettings();
             foreach ($default_pos_settings as $key => $value) {
                 if (! isset($pos_settings[$key])) {
                     $pos_settings[$key] = $value;
                 }
             }
-            // Save pos_settings as JSON
             $business_details['pos_settings'] = json_encode($pos_settings);
 
             $business_details['custom_labels'] = json_encode($business_details['custom_labels']);
@@ -521,22 +495,9 @@ class BusinessController extends Controller
      */
     public function postCheckEmail(Request $request)
     {
-        if(config('constants.do_not_allow_disposable_email') && $request->input('is_disposable_email')) {
+        $email = $request->input('email');
 
-            $email_validator = Validator::make($request->only('email'), [
-                'email' => 'email|indisposable',
-            ], [
-                'email.indisposable' => __('validation.indisposable'),
-            ]);
-
-            if ($email_validator->fails()) {
-                echo $email_validator->errors()->first('email');
-                exit;
-            }
-        }
-
-        // Second: uniqueness check (existing behavior)
-        $query = User::where('email', $request->input('email'));
+        $query = User::where('email', $email);
 
         if (! empty($request->input('user_id'))) {
             $user_id = $request->input('user_id');
@@ -548,12 +509,7 @@ class BusinessController extends Controller
             echo 'true';
             exit;
         } else {
-            // If indisposable mode, return message string; else preserve boolean 'false' for legacy consumers.
-            if ($request->boolean('is_disposable_email')) {
-                echo __('validation.unique', ['attribute' => __('business.email')]);
-            } else {
-                echo 'false';
-            }
+            echo 'false';
             exit;
         }
     }
@@ -629,14 +585,6 @@ class BusinessController extends Controller
             ];
             if (! empty($sms_settings['test_number'])) {
                 $response = $this->businessUtil->sendSms($data);
-                $parameter_type = isset($sms_settings['data_parameter_type']) ? $sms_settings['data_parameter_type'] : 'form-data';
-
-                if($parameter_type == 'json'){
-
-                    $body = json_decode($response->getBody(), true);
-                    // Optional: Check if 'status' or 'success' is true inside JSON (based on API format)
-                    return ['success' => true, 'msg' => 'SMS sent successfully', 'data' => $body];
-                }
             } else {
                 $response = __('lang_v1.test_number_is_required');
             }

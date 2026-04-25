@@ -74,15 +74,7 @@
 				{{$receipt_details->total_due}}
 			</div>
 		@endif
-		@if(!empty($receipt_details->total_previous_due))
-			<div class="bg-light-blue-active text-right font-23 padding-5">
-				<span class="pull-left bg-light-blue-active">
-					{!! $receipt_details->total_previous_due_label !!}
-				</span>
 
-				{{$receipt_details->total_previous_due}}
-			</div>
-		@endif
 		@if(!empty($receipt_details->all_due))
 			<div class="bg-light-blue-active text-right font-23 padding-5">
 				<span class="pull-left bg-light-blue-active">
@@ -92,7 +84,6 @@
 				{{$receipt_details->all_due}}
 			</div>
 		@endif
-		
 		
 		<!-- Total Paid-->
 		@if(!empty($receipt_details->total_paid))

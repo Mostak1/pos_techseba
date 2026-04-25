@@ -97,5 +97,4 @@
      'tax_number2' => 'Numri i Taksës 2',
      'is_active' => 'Aktive',
      'created_by' => 'Krijuar nga',
-     'additional_number_secondary' => 'Numër shtesë/Numër dytësor',
  ];

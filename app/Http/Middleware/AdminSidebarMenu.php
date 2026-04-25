@@ -416,18 +416,18 @@ class AdminSidebarMenu
             }
 
             //Stock transfer dropdown
-            if (in_array('stock_transfers', $enabled_modules) && (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.create') || auth()->user()->can('stock_transfer.view_own'))) {
+            if (in_array('stock_transfers', $enabled_modules) && (auth()->user()->can('purchase.view') || auth()->user()->can('purchase.create') || auth()->user()->can('view_own_purchase'))) {
                 $menu->dropdown(
                     __('lang_v1.stock_transfers'),
                     function ($sub) {
-                        if (auth()->user()->can('stock_transfer.view') || auth()->user()->can('stock_transfer.view_own')) {
+                        if (auth()->user()->can('purchase.view') || auth()->user()->can('view_own_purchase')) {
                             $sub->url(
                                 action([\App\Http\Controllers\StockTransferController::class, 'index']),
                                 __('lang_v1.list_stock_transfers'),
                                 ['icon' => '', 'active' => request()->segment(1) == 'stock-transfers' && request()->segment(2) == null]
                             );
                         }
-                        if (auth()->user()->can('stock_transfer.create')) {
+                        if (auth()->user()->can('purchase.create')) {
                             $sub->url(
                                 action([\App\Http\Controllers\StockTransferController::class, 'create']),
                                 __('lang_v1.add_stock_transfer'),
@@ -447,18 +447,18 @@ class AdminSidebarMenu
             }
 
             //stock adjustment dropdown
-            if (in_array('stock_adjustment', $enabled_modules) && (auth()->user()->can('stock_adjustment.view') || auth()->user()->can('stock_adjustment.create') || auth()->user()->can('view_own_stock_adjustment'))) {
+            if (in_array('stock_adjustment', $enabled_modules) && (auth()->user()->can('purchase.view') || auth()->user()->can('purchase.create') || auth()->user()->can('view_own_purchase'))) {
                 $menu->dropdown(
                     __('stock_adjustment.stock_adjustment'),
                     function ($sub) {
-                        if (auth()->user()->can('stock_adjustment.view')  || auth()->user()->can('view_own_stock_adjustment')) {
+                        if (auth()->user()->can('purchase.view')  || auth()->user()->can('view_own_purchase')) {
                             $sub->url(
                                 action([\App\Http\Controllers\StockAdjustmentController::class, 'index']),
                                 __('stock_adjustment.list'),
                                 ['icon' => '', 'active' => request()->segment(1) == 'stock-adjustments' && request()->segment(2) == null]
                             );
                         }
-                        if (auth()->user()->can('stock_adjustment.create')) {
+                        if (auth()->user()->can('purchase.create')) {
                             $sub->url(
                                 action([\App\Http\Controllers\StockAdjustmentController::class, 'create']),
                                 __('stock_adjustment.add'),

@@ -43,21 +43,6 @@ return [
     'purchase.create' => 'Add purchase & Stock Adjustment',
     'purchase.update' => 'Edit purchase & Stock Adjustment',
     'purchase.delete' => 'Delete purchase & Stock Adjustment',
-    
-    'stock_adjustment.view' => 'Vizualizare ajustare stoc',
-    'stock_adjustment.view_own' => 'Vizualizare ajustare stoc proprie',
-    'stock_adjustment.create' => 'Adăugare ajustare stoc',
-    'stock_adjustment.update' => 'Editare ajustare stoc',
-    'stock_adjustment.delete' => 'Ștergere ajustare stoc',
-    'purchase' => 'Achiziție',
-    'stock_adjustment' => 'Ajustare Stoc',
-
-    'stock_transfer' => 'Transfer stoc',
-    'stock_transfer.view' => 'Vizualizare toate transferurile de stoc',
-    'stock_transfer.view_own' => 'Vizualizare transferuri de stoc proprii',
-    'stock_transfer.create' => 'Adăugare transfer de stoc',
-    'stock_transfer.update' => 'Editare transfer de stoc',
-    'stock_transfer.delete' => 'Ștergere transfer de stoc',
 
     'sell.view' => 'View POS sell',
     'sell.create' => 'Add POS sell',

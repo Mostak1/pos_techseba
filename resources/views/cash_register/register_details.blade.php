@@ -36,7 +36,9 @@
                     @format_currency($key * $value)
                   </td>
                 </tr>
-                @php $total += ((float) $key) * ((float) $value); @endphp
+                @php
+                  $total += ($key * $value);
+                @endphp
                 @endforeach
               </tbody>
               <tfoot>

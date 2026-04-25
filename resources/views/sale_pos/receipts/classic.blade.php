@@ -437,16 +437,7 @@
 				</td>
 			</tr>
 			@endif
-			@if(!empty($receipt_details->total_previous_due))
-			<tr>
-				<th>
-					{!! $receipt_details->total_previous_due_label !!}
-				</th>
-				<td class="text-right">
-					{{$receipt_details->total_previous_due}}
-				</td>
-			</tr>
-			@endif
+
 			@if(!empty($receipt_details->all_due))
 			<tr>
 				<th>

@@ -86,7 +86,6 @@ return [
     'unique' => ':attribute ist schon vergeben.',
     'uploaded' => 'Der :attribute konnte nicht hochgeladen werden.',
     'url' => 'Das Format von :attribute ist ungültig.',
-    'indisposable' => 'Diese E-Mail ist nicht erlaubt.',
 
     /*
     |--------------------------------------------------------------------------

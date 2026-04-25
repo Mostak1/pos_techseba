@@ -25,17 +25,15 @@ function pos_boot($ul, $pt, $lc, $em, $un, $type = 1, $pid = null)
         ],
     ];
     curl_setopt_array($ch, $curlConfig);
-    
-    $result = '{"flag":"valid"}';
-#    $result = curl_exec($ch);
-#
-#    if (curl_errno($ch)) {
-#        $error_msg = 'C'.'U'.'RL '.'E'.'rro'.'r: ';
-#        $error_msg .= curl_errno($ch);
-#
-#        return redirect()->back()
-#            ->with('error', $error_msg);
-#    }
+    $result = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        $error_msg = 'C'.'U'.'RL '.'E'.'rro'.'r: ';
+        $error_msg .= curl_errno($ch);
+
+        return redirect()->back()
+            ->with('error', $error_msg);
+    }
     curl_close($ch);
 
     if ($result) {

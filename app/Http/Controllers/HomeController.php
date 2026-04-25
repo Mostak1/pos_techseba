@@ -298,7 +298,7 @@ class HomeController extends Controller
                 ->editColumn('stock', function ($row) {
                     $stock = $row->stock ? $row->stock : 0;
 
-                    return '<span data-is_quantity="true" data-orig-value="'.(float) $stock.'" class="display_currency" data-currency_symbol=false>'.(float) $stock.'</span> '.$row->unit;
+                    return '<span data-is_quantity="true" class="display_currency" data-currency_symbol=false>'.(float) $stock.'</span> '.$row->unit;
                 })
                 ->removeColumn('sku')
                 ->removeColumn('sub_sku')

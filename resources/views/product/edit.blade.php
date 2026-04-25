@@ -304,12 +304,7 @@
                             <input type="{{$cf_type}}" name="{{$db_field_name}}" id="{{$db_field_name}}" 
                             value="{{$product->$db_field_name}}" class="form-control" placeholder="{{$cf}}">
                         @elseif($cf_type == 'dropdown')
-                            <!-- {!! Form::select($db_field_name, $dropdown, $product->$db_field_name, ['placeholder' => $cf, 'class' => 'form-control select2']); !!} -->
-                             <select name="{{$db_field_name}}" id="{{$db_field_name}}" class="form-control select2">
-                                @foreach($dropdown as $option)
-                                    <option value="{{$option}}" @if($option == $product->$db_field_name) selected @endif>{{$option}}</option>
-                                @endforeach
-                             </select>
+                            {!! Form::select($db_field_name, $dropdown, $product->$db_field_name, ['placeholder' => $cf, 'class' => 'form-control select2']); !!}
                         @endif
                     </div>
                 </div>

@@ -12,9 +12,6 @@
 
     <title>@yield('title')</title> 
 
-    <!-- Tailwind CSS (includes DaisyUI) -->
-    <link href="{{ asset('css/tailwind/app.css?v='.$asset_v) }}" rel="stylesheet">
-
     <link rel="stylesheet" href="{{ asset('css/vendor.css?v='.$asset_v) }}">
 
     <!-- app css -->

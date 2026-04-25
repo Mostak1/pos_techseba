@@ -456,10 +456,9 @@ class ProductUtil extends Util
      * @param  int  $business_id
      * @param  int  $location_id
      * @param  bool  $check_qty (If false qty_available is not checked)
-     * @param  bool  $allow_zero_qty (If true, allow qty_available = 0 when $check_qty is true)
      * @return array
      */
-    public function getDetailsFromVariation($variation_id, $business_id, $location_id = null, $check_qty = true, $allow_zero_qty = false)
+    public function getDetailsFromVariation($variation_id, $business_id, $location_id = null, $check_qty = true)
     {
         $variation = Variation::with('media')->findOrFail($variation_id);
 
@@ -477,14 +476,10 @@ class ProductUtil extends Util
 
         //Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
         if ($check_qty) {
-            //Default behavior: enforce positive qty when stock is enabled.
-            //Opt-in override: when $allow_zero_qty is true, allow qty_available = 0.
-            if (! $allow_zero_qty) {
-                $query->where(function ($query) {
-                    $query->where('p.enable_stock', '!=', 1)
-                        ->orWhere('vld.qty_available', '>', 0);
-                });
-            }
+            $query->where(function ($query) {
+                $query->where('p.enable_stock', '!=', 1)
+                    ->orWhere('vld.qty_available', '>', 0);
+            });
         }
 
         if (! empty($location_id) && $check_qty) {
@@ -535,7 +530,6 @@ class ProductUtil extends Util
             'p.barcode_type',
             'vld.qty_available',
             'variations.default_sell_price',
-            'variations.default_purchase_price',
             'variations.sell_price_inc_tax',
             'variations.id as variation_id',
             'variations.combo_variations',  //Used in combo products
@@ -1264,7 +1258,7 @@ class ProductUtil extends Util
             $updated_purchase_lines[] = $purchase_line;
 
             //Edit product price
-            if ($enable_product_editing == 1 && ($transaction->type == 'purchase' || $transaction->type == 'production_purchase')) {
+            if ($enable_product_editing == 1 && $transaction->type == 'purchase') {
                 if (isset($data['default_sell_price'])) {
                     $variation_data['sell_price_inc_tax'] = ($this->num_uf($data['default_sell_price'], $currency_details)) / $multiplier;
                 }
@@ -1739,20 +1733,10 @@ class ProductUtil extends Util
             $query->addSelect('pl.id as purchase_line_id', 'pl.lot_number');
         }
 
-        $data = $query->groupBy('variations.id')
-             ->orderBy('VLD.qty_available', 'desc')
-             ->get();
+        $query->groupBy('variations.id');
 
-        // 🔐 Escape `name`, `variation`, `sub_sku`
-        $data->transform(function ($item) {
-            $item->name = e($item->name);
-            $item->variation = e($item->variation);
-            $item->sub_sku = e($item->sub_sku);
-            return $item;
-        });
-
-        return $data;
-
+        return $query->orderBy('VLD.qty_available', 'desc')
+                        ->get();
     }
 
     public function getProductStockDetails($business_id, $filters, $for)
@@ -2161,12 +2145,6 @@ class ProductUtil extends Util
                     'stock_in_second_unit' => $this->roundQuantity($stock_in_second_unit),
                 ]);
             } elseif ($stock_line->transaction_type == 'production_purchase') {
-
-                // ISSUE: There is a data mismatch between the stock calculation in product history and the fix mismatch functionality because in getVariationStockMisMatch only received transactions are considered 
-                if ($stock_line->status != 'received') {
-                    continue;
-                }
-
                 $quantity_change = $stock_line->purchase_line_quantity;
                 $stock += $quantity_change;
                 $stock_history_array[] = array_merge($temp_array, [
@@ -2407,284 +2385,5 @@ class ProductUtil extends Util
         return $products;
     }
 
-    /**
-     * Parse weighing scale barcode
-     * 
-     * @param string $scale_barcode
-     * @return array
-     */
-    public function parseWeighingBarcode($scale_barcode)
-    {
-        $business_id = session()->get('user.business_id');
-        $scale_setting = session()->get('business.weighing_scale_setting');
-        $error_msg = trans('messages.something_went_wrong');
-
-        //Check for prefix.
-        if ((strlen($scale_setting['label_prefix']) == 0) || \Illuminate\Support\Str::startsWith($scale_barcode, $scale_setting['label_prefix'])) {
-            $scale_barcode = substr($scale_barcode, strlen($scale_setting['label_prefix']));
-
-            //Get product sku, trim left side 0
-            $sku = ltrim(substr($scale_barcode, 0, $scale_setting['product_sku_length'] + 1), '0');
-
-            //Get quantity integer
-            $qty_int = substr($scale_barcode, $scale_setting['product_sku_length'] + 1, $scale_setting['qty_length'] + 1);
-
-            //Get quantity decimal
-            $qty_decimal = '0.' . substr($scale_barcode, $scale_setting['product_sku_length'] + $scale_setting['qty_length'] + 2, $scale_setting['qty_length_decimal'] + 1);
-
-            $qty = (float) $qty_int + (float) $qty_decimal;
-
-            //Find the variation id
-            $result = $this->filterProduct($business_id, $sku, null, false, null, [], ['sub_sku'], false, 'exact')->first();
-
-            if (!empty($result)) {
-                return [
-                    'variation_id' => $result->variation_id,
-                    'qty' => $qty,
-                    'success' => true,
-                ];
-            } else {
-                $error_msg = trans('lang_v1.sku_not_match', ['sku' => $sku]);
-            }
-        } else {
-            $error_msg = trans('lang_v1.prefix_did_not_match');
-        }
-
-        return [
-            'success' => false,
-            'msg' => $error_msg,
-        ];
-    }
-
-    /**
-     * Get warranties for dropdown
-     * 
-     * @return array
-     */
-    public function getWarrantiesForDropdown()
-    {
-        $business_id = session()->get('user.business_id');
-        $common_settings = session()->get('business.common_settings');
-        $is_warranty_enabled = !empty($common_settings['enable_product_warranty']) ? true : false;
-        $warranties = $is_warranty_enabled ? \App\Warranty::forDropdown($business_id) : [];
-
-        return $warranties;
-    }
-
-    /**
-     * Get last sell line for a customer
-     * 
-     * @param int $variation_id
-     * @param int $customer_id
-     * @param int $location_id
-     * @return object|null
-     */
-    public function getLastSellLineForCustomer($variation_id, $customer_id, $location_id)
-    {
-        $sell_line = \App\TransactionSellLine::join('transactions as t', 't.id', '=', 'transaction_sell_lines.transaction_id')
-            ->where('t.location_id', $location_id)
-            ->where('t.contact_id', $customer_id)
-            ->where('t.type', 'sell')
-            ->where('t.status', 'final')
-            ->where('transaction_sell_lines.variation_id', $variation_id)
-            ->orderBy('t.transaction_date', 'desc')
-            ->select('transaction_sell_lines.*')
-            ->first();
-
-        return $sell_line;
-    }
-
-    /**
-     * Generate sell line row for POS
-     * This is the core business logic for generating a product row
-     * 
-     * @param int $variation_id
-     * @param int $location_id
-     * @param int $quantity
-     * @param int $row_count
-     * @param bool $is_direct_sell
-     * @param bool $is_serial_no
-     * @param object|null $so_line
-     * @return array
-     */
-    public function getSellLineRow($variation_id, $location_id, $quantity, $row_count, $is_direct_sell, $is_serial_no, $so_line = null)
-    {
-        $business_id = request()->session()->get('user.business_id');
-        $business_util = new BusinessUtil();
-        $transaction_util = new TransactionUtil();
-        $contact_util = new ContactUtil();
-        
-        $business_details = $business_util->getDetails($business_id);
-        $weighing_barcode = request()->get('weighing_scale_barcode');
-
-        $pos_settings = empty($business_details->pos_settings) ? $business_util->defaultPosSettings() : json_decode($business_details->pos_settings, true);
-
-        $check_qty = !empty($pos_settings['allow_overselling']) ? false : true;
-
-        $is_sales_order = request()->has('is_sales_order') && request()->input('is_sales_order') == 'true' ? true : false;
-        $is_draft = request()->has('is_draft') && request()->input('is_draft') == 'true' ? true : false;
-
-        if ($is_sales_order || !empty($so_line) || $is_draft) {
-            $check_qty = false;
-        }
-
-        if (request()->input('disable_qty_alert') === 'true') {
-            $pos_settings['allow_overselling'] = true;
-        }
-
-        $product = $this->getDetailsFromVariation($variation_id, $business_id, $location_id, $check_qty);
-
-        if (!isset($product->quantity_ordered)) {
-            $product->quantity_ordered = $quantity;
-        }
-
-        $product->secondary_unit_quantity = !isset($product->secondary_unit_quantity) ? 0 : $product->secondary_unit_quantity;
-
-        $product->formatted_qty_available = $this->num_f($product->qty_available, false, null, true);
-
-        $sub_units = $this->getSubUnits($business_id, $product->unit_id, false, $product->product_id);
-
-        //Get customer group and change the price accordingly
-        $customer_id = request()->get('customer_id', null);
-        $cg = $contact_util->getCustomerGroup($business_id, $customer_id);
-        $percent = (empty($cg) || empty($cg->amount) || $cg->price_calculation_type != 'percentage') ? 0 : $cg->amount;
-        $product->default_sell_price = $product->default_sell_price + ($percent * $product->default_sell_price / 100);
-        $product->sell_price_inc_tax = $product->sell_price_inc_tax + ($percent * $product->sell_price_inc_tax / 100);
-
-        $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
-
-        $enabled_modules = $transaction_util->allModulesEnabled();
-
-        //Get lot number dropdown if enabled
-        $lot_numbers = [];
-        if (request()->session()->get('business.enable_lot_number') == 1 || request()->session()->get('business.enable_product_expiry') == 1) {
-            $lot_number_obj = $transaction_util->getLotNumbersFromVariation($variation_id, $business_id, $location_id, true);
-            foreach ($lot_number_obj as $lot_number) {
-                $lot_number->qty_formated = $this->num_f($lot_number->qty_available);
-                $lot_numbers[] = $lot_number;
-            }
-        }
-        $product->lot_numbers = $lot_numbers;
-
-        $purchase_line_id = request()->get('purchase_line_id');
-
-        $price_group = request()->input('price_group');
-        if (!empty($price_group)) {
-            $variation_group_prices = $this->getVariationGroupPrice($variation_id, $price_group, $product->tax_id);
-
-            if (!empty($variation_group_prices['price_inc_tax'])) {
-                $product->sell_price_inc_tax = $variation_group_prices['price_inc_tax'];
-                $product->default_sell_price = $variation_group_prices['price_exc_tax'];
-            }
-        }
-
-        $warranties = $this->getWarrantiesForDropdown();
-
-        $output['success'] = true;
-        $output['enable_sr_no'] = $product->enable_sr_no;
-
-        $waiters = [];
-        $waiters_enabled = false;
-        if ($this->isModuleEnabled('service_staff') && !empty($pos_settings['inline_service_staff'])) {
-            $waiters_enabled = true;
-            $waiters = $this->serviceStaffDropdown($business_id, $location_id);
-        }
-
-        $last_sell_line = null;
-        if ($is_direct_sell) {
-            $last_sell_line = $this->getLastSellLineForCustomer($variation_id, $customer_id, $location_id);
-        }
-
-        if (request()->get('type') == 'sell-return') {
-            $output['html_content'] = view('sell_return.partials.product_row')
-                ->with(compact('product', 'row_count', 'tax_dropdown', 'enabled_modules', 'sub_units'))
-                ->render();
-        } else {
-            $is_cg = !empty($cg->id) ? true : false;
-
-            $discount = $this->getProductDiscount($product, $business_id, $location_id, $is_cg, $price_group, $variation_id);
-
-            if ($is_direct_sell) {
-                $edit_discount = auth()->user()->can('edit_product_discount_from_sale_screen');
-                $edit_price = auth()->user()->can('edit_product_price_from_sale_screen');
-            } else {
-                $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen');
-                $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
-            }
-
-            $output['html_content'] = view('sale_pos.product_row')
-                ->with(compact('product', 'row_count', 'tax_dropdown', 'enabled_modules', 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'warranties', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order', 'last_sell_line', 'is_serial_no', 'waiters_enabled'))
-                ->render();
-        }
-
-        return $output;
-    }
-
-    /**
-     * Get POS product row (wrapper method)
-     * Handles weighing barcode parsing and modifiers
-     * 
-     * @param int $variation_id
-     * @param int $location_id
-     * @return array
-     */
-    public function getPosProductRow($variation_id, $location_id)
-    {
-        $output = [];
-
-        try {
-            $row_count = request()->get('product_row');
-            $row_count = $row_count + 1;
-            $quantity = request()->get('quantity', 1);
-            $weighing_barcode = request()->get('weighing_scale_barcode', null);
-
-            $is_direct_sell = false;
-            if (request()->get('is_direct_sell') == 'true') {
-                $is_direct_sell = true;
-            }
-
-            $is_serial_no = false;
-            if (request()->get('is_serial_no') == 'true') {
-                $is_serial_no = true;
-            }
-
-            if ($variation_id == 'null' && !empty($weighing_barcode)) {
-                $product_details = $this->parseWeighingBarcode($weighing_barcode);
-                if ($product_details['success']) {
-                    $variation_id = $product_details['variation_id'];
-                    $quantity = $product_details['qty'];
-                } else {
-                    $output['success'] = false;
-                    $output['msg'] = $product_details['msg'];
-
-                    return $output;
-                }
-            }
-
-            $output = $this->getSellLineRow($variation_id, $location_id, $quantity, $row_count, $is_direct_sell, $is_serial_no);
-
-            // Add modifiers if restaurant module is enabled
-            $transaction_util = new TransactionUtil();
-            if ($transaction_util->isModuleEnabled('modifiers') && !$is_direct_sell) {
-                $variation = \App\Variation::find($variation_id);
-                $business_id = request()->session()->get('user.business_id');
-                $this_product = \App\Product::where('business_id', $business_id)
-                    ->with(['modifier_sets'])
-                    ->find($variation->product_id);
-                if ($this_product && count($this_product->modifier_sets) > 0) {
-                    $product_ms = $this_product->modifier_sets;
-                    $output['html_modifier'] = view('restaurant.product_modifier_set.modifier_for_product')
-                        ->with(compact('product_ms', 'row_count'))->render();
-                }
-            }
-        } catch (\Exception $e) {
-            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
-
-            $output['success'] = false;
-            $output['msg'] = __('lang_v1.item_out_of_stock');
-        }
-
-        return $output;
-    }
   
 }

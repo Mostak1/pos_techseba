@@ -97,5 +97,4 @@
      'tax_number2' => 'BTW nummer 2',
      'is_active' => 'Actief',
      'created_by' => 'Gemaakt door',
-     'additional_number_secondary' => 'Aanvullend nummer/Secundair nummer',
  ];

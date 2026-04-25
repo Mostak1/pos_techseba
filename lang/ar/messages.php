@@ -1,50 +1,36 @@
 <?php
 
-return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Common Language Lines
-    |--------------------------------------------------------------------------
-    |
-    | The following language lines are used during common CRUD operations.
-    |
-    */
-
-    'add' => 'إضافة',
-    'edit' => 'تعديل',
-    'save' => 'حفظ',
-    'update' => 'تحديث',
-    'action' => 'إجراء',
-    'actions' => 'الإجراءات',
-    'view' => 'عرض',
-    'delete' => 'حذف',
-    'close' => 'إغلاق',
-    'something_went_wrong' => 'حدث خطأ ما، يُرجى إعادة المحاولة لاحقًا',
-    'required' => 'هذا الحقل مطلوب',
-    'please_select' => 'الرجاء الإختيار',
-    'cancel' => 'إلغاء',
-    'date' => 'التاريخ',
-    'filter_by_date' => 'فرز حسب التاريخ',
-    'location' => 'الموقع',
-    'go_back' => 'العودة',
-    'due_tooltip' => 'القيمة السالبة (-): مبلغ مستحق الدفع، القيمة الموجبة (+): مبلغ مستحق التحصيل',
-    'purchase_due_tooltip' => 'القيمة السالبة (-): مبلغ مستحق التحصيل، القيمة الموجبة (+): مبلغ مستحق الدفع',
-    'yes' => 'نعم',
-    'no' => 'لا',
-    'all' => 'الكل',
-    'settings' => 'الاعدادات',
-    'business_location_settings' => 'إعدادات موقع النشاط التجاري',
-    'print' => 'طباعة',
-    'submit' => 'إرسال',
-    'purchase_sell_mismatch_exception' => 'خطأ: غير مسموح به: عدم التوافق بين الكمية المباعة والكمية المتاحة. المنتج: :product',
-    'purchase_stock_adjustment_mismatch_exception' => 'خطأ: غير مسموح به: عدم التطابق بين تسوية المخزون وكمية الشراء. المنتج: المنتج',
-    'transaction_edit_not_allowed' => 'لا يسمح بتعديل المعاملة بعد :days أيام.',
-    'name' => 'الاسم',
-    'price' => 'السعر',
-    'activate' => 'تنشيط',
-    'deactivate' => 'إلغاء التنشيط',
-    'print_detailed' => 'طباعة التفاصيل',
-    'print_mini' => 'طابعة صغيرة',
-    'opening' => 'افتتاح',
-];
+ return [
+     'add' => 'إضافة',
+     'edit' => 'تعديل',
+     'save' => 'حفظ',
+     'update' => 'تحديث',
+     'action' => 'خيار',
+     'actions' => 'خيارات',
+     'view' => 'فحص',
+     'delete' => 'حذف',
+     'close' => 'إغلاق',
+     'something_went_wrong' => 'لقد حدث شيء خاطئ. شكرا على المحاولة لاحقا',
+     'required' => 'هذا الحقل مطلوب',
+     'please_select' => 'يرجى الاختيار',
+     'cancel' => 'إلغاء',
+     'date' => 'تاريخ',
+     'filter_by_date' => 'تصفية حسب التاريخ',
+     'location' => 'فرع',
+     'go_back' => 'إعادة',
+     'due_tooltip' => '- القيمة = المبلغ الواجب دفعه <br> + القيمة = مبلغ الاستلام',
+     'purchase_due_tooltip' => '- القيمة = مبلغ الاستلام <br> + القيمة = المبلغ المطلوب سداده',
+     'yes' => 'نعم',
+     'no' => 'لا',
+     'all' => 'كل',
+     'settings' => 'إعدادات',
+     'business_location_settings' => 'إعدادات موقع الشركة',
+     'print' => 'طباعة',
+     'submit' => 'إرسال',
+     'purchase_sell_mismatch_exception' => 'خطأ: غير مصرح به: عدم التوافق بين الكمية المباعة والكمية التي تم شراؤها المنتج : product:',
+     'purchase_stock_adjustment_mismatch_exception' => 'خطأ: غير مسموح: عدم التوافق بين تعديل المخزون والكمية التي تم شراؤها المنتج : product:',
+     'transaction_edit_not_allowed' => 'لا يُسمح بإصدار المعاملة بعد days: الأيام.',
+     'print_detailed' => 'Imprimir Detallado',
+     'print_mini' => 'Imprimir Mini',
+     'opening' => 'Apertura',
+ ];

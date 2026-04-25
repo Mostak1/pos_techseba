@@ -105,6 +105,5 @@ return [
     'tax_number1' => 'Taxa 1',
     'tax_number2' => 'Taxa 2',
     'is_active' => 'Activ',
-     'created_by' => 'Creat de',
-     'additional_number_secondary' => 'Număr suplimentar/Număr secundar',
- ];
+    'created_by' => 'Creat de',
+];

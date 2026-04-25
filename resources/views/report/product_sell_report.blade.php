@@ -120,8 +120,6 @@
                                         <th id="psr_product_custom_field2">{{$product_custom_field2}}</th>
                                         <th>@lang('sale.customer_name')</th>
                                         <th>@lang('lang_v1.contact_id')</th>
-                                        <th>@lang('lang_v1.contact_no')</th>
-                                        <th>@lang('business.email')</th>
                                         <th>@lang('sale.invoice_no')</th>
                                         <th>@lang('messages.date')</th>
                                         <th>@lang('sale.qty')</th>
@@ -135,7 +133,7 @@
                                 </thead>
                                 <tfoot>
                                     <tr class="bg-gray font-17 footer-total text-center">
-                                        <td colspan="10"><strong>@lang('sale.total'):</strong></td>
+                                        <td colspan="8"><strong>@lang('sale.total'):</strong></td>
                                         <td id="footer_total_sold"></td>
                                         <td></td>
                                         <td></td>
@@ -160,8 +158,6 @@
                                         <th>@lang('sale.product')</th>
                                         <th>@lang('product.sku')</th>
                                         <th>@lang('sale.customer_name')</th>
-                                        <th>@lang('lang_v1.contact_no')</th>
-                                        <th>@lang('business.email')</th>
                                         <th>@lang('sale.invoice_no')</th>
                                         <th>@lang('messages.date')</th>
                                         <th>@lang('lang_v1.purchase_ref_no')</th>

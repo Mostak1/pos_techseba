@@ -40,26 +40,9 @@ return [
     'product.delete' => 'Ürün Silme',
 
     'purchase.view' => 'Satınalma ve Stok Ayarlarını Görüntüleme',
-    'purchase.view_own' => 'Kendi Satın Almalarını Görüntüleme',
-    'purchase.view_all' => 'Tüm Satın Almaları Görüntüleme',
     'purchase.create' => 'Satınalma ve Stok Ayarlarını Ekleme',
     'purchase.update' => 'Satınalma ve Stok Ayarlarını Düzenleme',
     'purchase.delete' => 'Satınalma ve Stok Ayarlarını Silme',
-    
-    'stock_adjustment.view' => 'Stok Ayarlarını Görüntüleme',
-    'stock_adjustment.view_own' => 'Kendi Stok Ayarlarını Görüntüleme',
-    'stock_adjustment.create' => 'Stok Ayarı Ekleme',
-    'stock_adjustment.update' => 'Stok Ayarını Düzenleme',
-    'stock_adjustment.delete' => 'Stok Ayarını Silme',
-    'purchase' => 'Satın Alma',
-    'stock_adjustment' => 'Stok Ayarı',
-
-    'stock_transfer' => 'Stok Transferi',
-    'stock_transfer.view' => 'Tüm stok transferlerini görüntüleme',
-    'stock_transfer.view_own' => 'Kendi stok transferlerini görüntüleme',
-    'stock_transfer.create' => 'Stok transferi ekleme',
-    'stock_transfer.update' => 'Stok transferini düzenleme',
-    'stock_transfer.delete' => 'Stok transferini silme',
 
     'sell.view' => 'POS Satışlarını Görüntüleme',
     'sell.create' => 'POS Satışı Ekleme',
