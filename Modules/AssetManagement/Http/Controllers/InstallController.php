@@ -101,7 +101,6 @@ class InstallController extends Controller
         }
 
         try {
-            DB::beginTransaction();
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', '512M');
 
@@ -120,15 +119,12 @@ class InstallController extends Controller
                 abort(404);
             }
 
-            DB::commit();
-
             $output = ['success' => 1,
                 'msg' => 'AssetManagement module updated Succesfully to version '.$this->appVersion.' !!',
             ];
 
             return redirect()->back()->with(['status' => $output]);
-        } catch (Exception $e) {
-            DB::rollBack();
+        } catch (\Exception $e) {
             exit($e->getMessage());
         }
     }
