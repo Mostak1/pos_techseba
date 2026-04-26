@@ -61,8 +61,6 @@ $intruction_type= 'install';
     public function install()
     {
         try {
-            DB::beginTransaction();
-
             $is_installed = System::getProperty($this->module_name . '_version');
             if (!empty($is_installed)) {
                 abort(404);
@@ -73,13 +71,10 @@ $intruction_type= 'install';
             Artisan::call('module:publish', ['module' => "Accounting"]);
             System::addProperty($this->module_name . '_version', $this->appVersion);
 
-            DB::commit();
-            
             $output = ['success' => 1,
                     'msg' => 'Accounting module installed succesfully'
                 ];
         } catch (\Exception $e) {
-            DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
             $output = [
@@ -132,7 +127,6 @@ $intruction_type= 'install';
         }
 
         try {
-            DB::beginTransaction();
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', '512M');
 
@@ -150,15 +144,12 @@ $intruction_type= 'install';
                 abort(404);
             }
 
-            DB::commit();
-            
             $output = ['success' => 1,
                         'msg' => 'Accounting module updated Succesfully to version ' . $this->appVersion . ' !!'
                     ];
 
             return redirect()->back()->with(['status' => $output]);
-        } catch (Exception $e) {
-            DB::rollBack();
+        } catch (\Exception $e) {
             die($e->getMessage());
         }
     }

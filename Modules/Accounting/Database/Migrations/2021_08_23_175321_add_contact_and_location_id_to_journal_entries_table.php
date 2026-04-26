@@ -15,16 +15,36 @@ class AddContactAndLocationIdToJournalEntriesTable extends Migration
      */
     public function up()
     {
-        DB::transaction(function () {
-            Schema::table('journal_entries', function (Blueprint $table) {
+        Schema::table('journal_entries', function (Blueprint $table) {
+            if ($this->indexExists('journal_entries', 'client_id_index')) {
                 $table->dropIndex('client_id_index');
+            }
+
+            if ($this->indexExists('journal_entries', 'branch_id_index')) {
                 $table->dropIndex('branch_id_index');
+            }
+
+            if (Schema::hasColumn('journal_entries', 'client_id')) {
                 DB::statement('ALTER TABLE `journal_entries` CHANGE `client_id` `contact_id` INT(10) UNSIGNED NULL DEFAULT NULL;');
+            }
+
+            if (Schema::hasColumn('journal_entries', 'branch_id')) {
                 DB::statement('ALTER TABLE `journal_entries` CHANGE `branch_id` `location_id` INT(10) UNSIGNED NULL DEFAULT NULL;');
+            }
+
+            if (Schema::hasColumn('journal_entries', 'contact_id') && ! $this->indexExists('journal_entries', 'journal_entries_contact_id_index')) {
                 $table->index('contact_id');
+            }
+
+            if (Schema::hasColumn('journal_entries', 'location_id') && ! $this->indexExists('journal_entries', 'journal_entries_location_id_index')) {
                 $table->index('location_id');
-            });
+            }
         });
+    }
+
+    private function indexExists($table, $index)
+    {
+        return ! empty(DB::select('SHOW INDEX FROM `'.$table.'` WHERE Key_name = ?', [$index]));
     }
 
     /**
