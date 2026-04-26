@@ -74,11 +74,12 @@ use Illuminate\Support\Facades\Route;
 
 include_once 'install_r.php';
 Route::get('/clear-cache', function () {
-    Artisan::call('migrate:refresh', ['--force' => true]);
+    Artisan::call('migrate');
     Artisan::call('cache:clear');
     Artisan::call('config:clear');
-    Artisan::call('config:cache');
     Artisan::call('view:clear');
+    Artisan::call('route:clear');
+    Artisan::call('optimize:clear');
     return "Cache is cleared";
 });
 Route::middleware(['setData'])->group(function () {
