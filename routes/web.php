@@ -73,7 +73,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 include_once 'install_r.php';
-
+Route::get('/clear-cache', function () {
+    Artisan::call('migrate:refresh', ['--force' => true]);
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('config:cache');
+    Artisan::call('view:clear');
+    return "Cache is cleared";
+});
 Route::middleware(['setData'])->group(function () {
     Route::get('/', function () {
         return view('welcome');
@@ -466,7 +473,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('warranties', WarrantyController::class);
 
     Route::resource('dashboard-configurator', DashboardConfiguratorController::class)
-    ->only(['edit', 'update']);
+        ->only(['edit', 'update']);
 
     Route::get('view-media/{model_id}', [SellController::class, 'viewMedia']);
 
