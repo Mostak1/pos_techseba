@@ -107,6 +107,15 @@ Route::get('/clear-cache', function () {
     Artisan::call('optimize:clear');
     return "Cache is cleared and storage permissions set.";
 });
+Route::get('/view-log', function () {
+    $path = storage_path('logs/laravel.log');
+    if (!file_exists($path)) {
+        return "Log file does not exist.";
+    }
+    $file = file($path);
+    $lines = array_slice($file, -100);
+    return "<pre>" . implode("", $lines) . "</pre>";
+});
 Route::middleware(['setData'])->group(function () {
     Route::get('/', function () {
         return view('welcome');
