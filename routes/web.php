@@ -74,6 +74,20 @@ use Illuminate\Support\Facades\Route;
 
 include_once 'install_r.php';
 Route::get('/clear-cache', function () {
+    // Ensure storage folders exist and are writeable
+    $storage_dirs = [
+        storage_path('framework/sessions'),
+        storage_path('framework/views'),
+        storage_path('framework/cache'),
+        storage_path('logs'),
+    ];
+    foreach ($storage_dirs as $dir) {
+        if (!file_exists($dir)) {
+            @mkdir($dir, 0775, true);
+        }
+        @chmod($dir, 0775);
+    }
+
     Artisan::call('migrate');
     Artisan::call('module:migrate');
     Artisan::call('cache:clear');
@@ -81,7 +95,7 @@ Route::get('/clear-cache', function () {
     Artisan::call('view:clear');
     Artisan::call('route:clear');
     Artisan::call('optimize:clear');
-    return "Cache is cleared";
+    return "Cache is cleared and storage permissions set.";
 });
 Route::middleware(['setData'])->group(function () {
     Route::get('/', function () {
