@@ -74,6 +74,16 @@ use Illuminate\Support\Facades\Route;
 
 include_once 'install_r.php';
 Route::get('/clear-cache', function () {
+    if (!defined('STDIN')) {
+        define('STDIN', fopen('php://stdin', 'r'));
+    }
+    if (!defined('STDOUT')) {
+        define('STDOUT', fopen('php://stdout', 'w'));
+    }
+    if (!defined('STDERR')) {
+        define('STDERR', fopen('php://stderr', 'w'));
+    }
+
     // Ensure storage folders exist and are writeable
     $storage_dirs = [
         storage_path('framework/sessions'),
