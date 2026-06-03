@@ -117,6 +117,11 @@ Route::get('/view-log', function () {
     return "<pre>" . implode("", $lines) . "</pre>";
 });
 Route::get('/check-config', function () {
+    $users = \DB::table('users')->select('id', 'username', 'email', 'status', 'allow_login', 'business_id')->get()->map(function($user) {
+        $business = \DB::table('businesses')->where('id', $user->business_id)->first();
+        $user->business_active = $business ? $business->is_active : null;
+        return $user;
+    });
     return [
         'app_url' => config('app.url'),
         'session_driver' => config('session.driver'),
@@ -124,6 +129,7 @@ Route::get('/check-config', function () {
         'session_secure' => config('session.secure'),
         'request_root' => request()->root(),
         'request_secure' => request()->secure(),
+        'users' => $users,
     ];
 });
 Route::middleware(['setData'])->group(function () {
