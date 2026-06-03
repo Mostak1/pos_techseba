@@ -75,6 +75,7 @@ use Illuminate\Support\Facades\Route;
 include_once 'install_r.php';
 Route::get('/clear-cache', function () {
     Artisan::call('migrate');
+    Artisan::call('module:migrate');
     Artisan::call('cache:clear');
     Artisan::call('config:clear');
     Artisan::call('view:clear');
