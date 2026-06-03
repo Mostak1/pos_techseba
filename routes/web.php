@@ -118,7 +118,7 @@ Route::get('/view-log', function () {
 });
 Route::get('/check-config', function () {
     $users = \DB::table('users')->select('id', 'username', 'email', 'status', 'allow_login', 'business_id')->get()->map(function($user) {
-        $business = \DB::table('businesses')->where('id', $user->business_id)->first();
+        $business = \DB::table('business')->where('id', $user->business_id)->first();
         $user->business_active = $business ? $business->is_active : null;
         return $user;
     });
