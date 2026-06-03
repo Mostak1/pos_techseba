@@ -116,6 +116,16 @@ Route::get('/view-log', function () {
     $lines = array_slice($file, -100);
     return "<pre>" . implode("", $lines) . "</pre>";
 });
+Route::get('/check-config', function () {
+    return [
+        'app_url' => config('app.url'),
+        'session_driver' => config('session.driver'),
+        'session_domain' => config('session.domain'),
+        'session_secure' => config('session.secure'),
+        'request_root' => request()->root(),
+        'request_secure' => request()->secure(),
+    ];
+});
 Route::middleware(['setData'])->group(function () {
     Route::get('/', function () {
         return view('welcome');
