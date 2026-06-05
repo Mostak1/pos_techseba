@@ -96,11 +96,14 @@ Route::get('/check-config', function () {
         $user->business_active = $business ? $business->is_active : null;
         return $user;
     });
+
     return [
         'app_url' => config('app.url'),
         'session_driver' => config('session.driver'),
         'session_domain' => config('session.domain'),
         'session_secure' => config('session.secure'),
+        'sessions_table_exists' => \Schema::hasTable('sessions'),
+        'session_cookie' => config('session.cookie'),
         'request_root' => request()->root(),
         'request_secure' => request()->secure(),
         'users' => $users,
