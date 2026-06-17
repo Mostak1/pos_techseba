@@ -59,6 +59,7 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariationTemplateController;
 use App\Http\Controllers\WarrantyController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -82,7 +83,10 @@ Route::get('/clear-cache', function () {
     Artisan::call('view:clear');
     Artisan::call('route:clear');
     Artisan::call('optimize:clear');
-    return "Cache is cleared and storage permissions set.";
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+
+    return 'Application cache, config cache, and optimized files cleared.';
 });
 Route::get('/view-log', function () {
     $path = storage_path('logs/laravel.log');
@@ -99,11 +103,14 @@ Route::get('/check-config', function () {
         $user->business_active = $business ? $business->is_active : null;
         return $user;
     });
+
     return [
         'app_url' => config('app.url'),
         'session_driver' => config('session.driver'),
         'session_domain' => config('session.domain'),
         'session_secure' => config('session.secure'),
+        'sessions_table_exists' => \Schema::hasTable('sessions'),
+        'session_cookie' => config('session.cookie'),
         'request_root' => request()->root(),
         'request_secure' => request()->secure(),
         'users' => $users,

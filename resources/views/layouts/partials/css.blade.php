@@ -1,7 +1,7 @@
 <link href="{{ asset('css/tailwind/app.css?v='.$asset_v) }}" rel="stylesheet">
 
 <link rel="stylesheet"
-href="https://fonts.googleapis.com/css2?family=Suwannaphum|Noto+Sans+Khmer|Khmer+OS+Battambang&display=swap">
+href="https://fonts.googleapis.com/css2?family=Suwannaphum&family=Noto+Sans+Khmer&family=Khmer+OS+Battambang&display=swap">
 
 <link rel="stylesheet" href="{{ asset('css/vendor.css?v='.$asset_v) }}">
 
