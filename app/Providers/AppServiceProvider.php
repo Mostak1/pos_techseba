@@ -32,6 +32,19 @@ class AppServiceProvider extends ServiceProvider
         ini_set('memory_limit', '-1');
         set_time_limit(0);
 
+        // Ensure required storage directories exist
+        $storage_folders = [
+            storage_path('framework/cache'),
+            storage_path('framework/cache/data'),
+            storage_path('framework/sessions'),
+            storage_path('framework/views'),
+        ];
+        foreach ($storage_folders as $folder) {
+            if (!is_dir($folder)) {
+                @mkdir($folder, 0775, true);
+            }
+        }
+
         if (config('app.debug')) {
             error_reporting(E_ALL & ~E_USER_DEPRECATED);
         } else {
