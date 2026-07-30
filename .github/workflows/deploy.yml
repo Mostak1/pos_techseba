@@ -16,9 +16,9 @@ jobs:
             - name: Upload to cPanel via FTP
               uses: SamKirkland/FTP-Deploy-Action@v4.3.5
               with:
-                  server: ${{ secrets.FTP_SERVER }}
-                  username: ${{ secrets.FTP_USERNAME }}
-                  password: ${{ secrets.FTP_PASSWORD }}
+                  server: ftp.techseba.com
+                  username: sell@sell.techseba.com
+                  password: Mostak%12361236
                   port: 21
                   server-dir: sell.techseba.com/
                   exclude: |
