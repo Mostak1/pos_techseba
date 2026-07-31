@@ -193,11 +193,6 @@ class InstallController extends Controller
                     ->with('error', $msg);
             }
 
-            //pos boot
-            //$return = pos_boot($input['APP_URL'], __DIR__, $input['ENVATO_PURCHASE_CODE'], $input['ENVATO_EMAIL'], $input['ENVATO_USERNAME']);
-            //if (! empty($return)) {
-            //    return $return;
-            //}
 
             //Check for activation key
             if ($this->macActivationKeyChecker) {
