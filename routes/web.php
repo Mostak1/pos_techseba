@@ -86,7 +86,23 @@ Route::get('/clear-cache', function () {
     Artisan::call('config:clear');
     Artisan::call('cache:clear');
 
-    return 'Application cache, config cache, and optimized files cleared.';
+});
+Route::get('/reset-db', function () {
+    ini_set('memory_limit', '-1');
+    set_time_limit(0);
+
+    try {
+        Artisan::call('migrate:fresh', [
+            '--seed' => true,
+            '--force' => true,
+        ]);
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+
+        return 'Database successfully cleaned, migrated fresh, and default business & admin user seeded successfully! <br><br><b>Admin Credentials:</b><br>Username: admin<br>Password: 123456';
+    } catch (\Exception $e) {
+        return 'Error cleaning and seeding database: ' . $e->getMessage();
+    }
 });
 Route::get('/view-log', function () {
     $path = storage_path('logs/laravel.log');
