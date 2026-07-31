@@ -22,7 +22,7 @@
         <script src="https://unpkg.com/tua-body-scroll-lock"></script>
         <!-- CSRF Token -->
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>@yield('title') | {{config('app.name', 'ultimatePOS')}}</title>
+        <title>@yield('title') | {{config('app.name', 'POS')}}</title>
         <!-- custom css code -->
         @if(!empty($__site_details['custom_css']))
             {!!$__site_details['custom_css']!!}

@@ -1,7 +1,7 @@
 {
     "name": "AiAssistance",
     "alias": "aiassistance",
-    "description": "AI Assistant module for UltimatePOS. This module used openAI API to help with in copywriting & reporting",
+    "description": "AI Assistant module for copywriting and reporting",
     "keywords": [],
     "priority": 0,
     "providers": [

@@ -1,7 +1,7 @@
 {
     "name": "InventoryManagement",
     "alias": "inventorymanagement",
-    "description": "Advance Inventory Management Module for UltimatePOS",
+    "description": "Advanced Inventory Management Module",
     "keywords": [],
     "active": 1,
     "order": 0,
