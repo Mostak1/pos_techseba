@@ -4,6 +4,7 @@
 href="https://fonts.googleapis.com/css2?family=Suwannaphum&family=Noto+Sans+Khmer&family=Khmer+OS+Battambang&display=swap">
 
 <link rel="stylesheet" href="{{ asset('css/vendor.css?v='.$asset_v) }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <link rel="stylesheet" href="{{ asset('css/custom-style.css?v='.$asset_v) }}">
 
