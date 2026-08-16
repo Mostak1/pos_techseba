@@ -74,18 +74,34 @@ use Illuminate\Support\Facades\Route;
 */
 
 include_once 'install_r.php';
-Route::get('/clear-cache', function () {
+Route::get('/view-clear', function () {
+    Artisan::call('view:clear');
+    return '<h3>View cache cleared successfully! (php artisan view:clear)</h3>';
+});
 
-    Artisan::call('migrate');
-    Artisan::call('module:migrate');
+Route::get('/route-clear', function () {
+    Artisan::call('route:clear');
+    return '<h3>Route cache cleared successfully! (php artisan route:clear)</h3>';
+});
+
+Route::get('/cache-clear', function () {
+    Artisan::call('cache:clear');
+    return '<h3>Application cache cleared successfully! (php artisan cache:clear)</h3>';
+});
+
+Route::get('/config-clear', function () {
+    Artisan::call('config:clear');
+    return '<h3>Configuration cache cleared successfully! (php artisan config:clear)</h3>';
+});
+
+Route::get('/clear-cache', function () {
     Artisan::call('cache:clear');
     Artisan::call('config:clear');
     Artisan::call('view:clear');
     Artisan::call('route:clear');
     Artisan::call('optimize:clear');
-    Artisan::call('config:clear');
-    Artisan::call('cache:clear');
 
+    return '<h3>All caches (Cache, Config, View, Route, Optimize) cleared successfully!</h3>';
 });
 Route::get('/reset-db', function () {
     ini_set('memory_limit', '-1');
