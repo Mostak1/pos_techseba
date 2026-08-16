@@ -593,3 +593,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])
     Route::get('/sells/invoice-url/{id}', [SellPosController::class, 'showInvoiceUrl']);
     Route::get('/show-notification/{id}', [HomeController::class, 'showNotification']);
 });
+
+Route::get('/seed-dubai-data', [\App\Http\Controllers\DubaiSeedController::class, 'seed']);
+
