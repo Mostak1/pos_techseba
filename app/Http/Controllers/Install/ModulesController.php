@@ -31,7 +31,7 @@ class ModulesController extends Controller
      */
     public function index()
     {
-        if (! auth()->user()->can('manage_modules')) {
+        if (! auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -89,7 +89,7 @@ class ModulesController extends Controller
 
     public function regenerate()
     {
-        if (! auth()->user()->can('manage_modules')) {
+        if (! auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -167,7 +167,7 @@ class ModulesController extends Controller
      */
     public function update(Request $request, $module_name)
     {
-        if (! auth()->user()->can('manage_modules')) {
+        if (! auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -206,7 +206,7 @@ class ModulesController extends Controller
      */
     public function destroy($module_name)
     {
-        if (! auth()->user()->can('manage_modules')) {
+        if (! auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -240,6 +240,10 @@ class ModulesController extends Controller
      */
     public function uploadModule(Request $request)
     {
+        if (! auth()->user()->can('superadmin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $notAllowed = $this->moduleUtil->notAllowedInDemo();
         if (! empty($notAllowed)) {
             return $notAllowed;

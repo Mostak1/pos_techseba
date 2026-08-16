@@ -27,7 +27,7 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::before(function ($user, $ability) {
             if (in_array($ability, ['backup', 'superadmin',
-                'business_settings.access', ])) {
+                'business_settings.access', 'manage_modules', ])) {
                 $administrator_list = config('constants.administrator_usernames');
 
                 if (in_array(strtolower($user->username), explode(',', strtolower($administrator_list)))) {
