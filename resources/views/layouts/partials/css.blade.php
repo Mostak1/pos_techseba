@@ -6,8 +6,6 @@ href="https://fonts.googleapis.com/css2?family=Suwannaphum&family=Noto+Sans+Khme
 <link rel="stylesheet" href="{{ asset('css/vendor.css?v='.$asset_v) }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-<link rel="stylesheet" href="{{ asset('css/custom-style.css?v='.$asset_v) }}">
-
 @if( in_array(session()->get('user.language', config('app.locale')), config('constants.langs_rtl')) )
 	<link rel="stylesheet" href="{{ asset('css/rtl.css?v='.$asset_v) }}">
 @endif
@@ -16,6 +14,8 @@ href="https://fonts.googleapis.com/css2?family=Suwannaphum&family=Noto+Sans+Khme
 
 <!-- app css -->
 <link rel="stylesheet" href="{{ asset('css/app.css?v='.$asset_v) }}">
+<link rel="stylesheet" href="{{ asset('css/custom-style.css?v='.$asset_v) }}">
+
 
 @if(isset($pos_layout) && $pos_layout)
 	<style type="text/css">
