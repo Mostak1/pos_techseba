@@ -514,6 +514,7 @@ class DubaiBusinessDataSeeder extends Seeder
         imagestring($im, 4, 40, 345, "ORIGINAL PRODUCT - AED CURRENCY", $subTextColor);
 
         imagepng($im, $filePath);
+        @chmod($filePath, 0755);
         imagedestroy($im);
     }
 
